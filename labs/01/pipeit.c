@@ -17,6 +17,36 @@
  * @return 0 on success, 1-255 on failure
  */
 int main(int argc, char *argv[]) {
+    int pipeFile[2];
     
+    pipe(pipeFile);
+    
+    if (fork() == 0) {
+        /*printf("Child 1\n");*/
+        
+        dup2(pipeFile[1], STDOUT_FILENO);
+        close(pipeFile[0]);
+        /*write(pipeFile[1], "hello", 6);*/
+        close(pipeFile[1]);
+        execlp("ls", "ls");
+        return EXIT_SUCCESS;
+    }
+    if (fork() == 0) {
+        /*printf("Child 2\n");*/
+        
+        int outFile = open("outfile", O_RDWR | O_CREAT | O_TRUNC);
+        
+        dup2(pipeFile[0], STDIN_FILENO);
+        dup2(outFile, STDOUT_FILENO);
+        close(pipeFile[0]);
+        close(pipeFile[1]);
+        close(outFile);
+        
+        execlp("sort", "sort", "-r", (char*)NULL);
+        return EXIT_SUCCESS;
+    }
+    
+    /*printf("Parent\n");*/
+    return EXIT_SUCCESS;
 }
 

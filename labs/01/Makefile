@@ -8,12 +8,15 @@ CC=gcc
 # but not SUS.
 SUS3=-D_POSIX_SOURCE -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600
 HARDEN=-D_FORTIFY_SOURCE
-CFLAGS=-Wall -g -std=c99 -pedantic $(SUS3) $(HARDEN)
+CFLAGS=-Wall -g -std=c99 -pedantic -ansi $(SUS3) $(HARDEN)
 LDFLAGS=
 
-ALL=pipeit
+ALL=run
 
 all:	$(ALL)
+
+run: pipeit
+	./pipeit
 
 pipeit:	pipeit.o
 	$(CC) $(LDFLAGS) -o $@ $^
