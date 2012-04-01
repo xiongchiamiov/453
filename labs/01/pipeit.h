@@ -6,5 +6,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+int doLsChild();
+int doSortChild();
+
 #endif
 
