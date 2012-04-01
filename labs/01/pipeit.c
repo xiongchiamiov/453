@@ -34,7 +34,9 @@ int main(int argc, char *argv[]) {
     if (fork() == 0) {
         /*printf("Child 2\n");*/
         
-        int outFile = open("outfile", O_RDWR | O_CREAT | O_TRUNC);
+        int outFile = open("outfile",
+                           O_RDWR | O_CREAT | O_TRUNC,
+                           S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         
         dup2(pipeFile[0], STDIN_FILENO);
         dup2(outFile, STDOUT_FILENO);
