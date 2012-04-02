@@ -61,7 +61,9 @@ int main(int argc, char *argv[]) {
 int doLsChild(int pipeFile[]) {
     /*printf("Child 1\n");*/
     
-    dup2(pipeFile[1], STDOUT_FILENO);
+    if (dup2(pipeFile[1], STDOUT_FILENO) == -1) {
+        return EXIT_FAILURE;
+    }
     close(pipeFile[0]);
     close(pipeFile[1]);
     return execlp("ls", "ls");
@@ -79,8 +81,12 @@ int doSortChild(int pipeFile[]) {
                        O_RDWR | O_CREAT | O_TRUNC,
                        S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     
-    dup2(pipeFile[0], STDIN_FILENO);
-    dup2(outFile, STDOUT_FILENO);
+    if (dup2(pipeFile[0], STDIN_FILENO) == -1) {
+        return EXIT_FAILURE;
+    }
+    if (dup2(outFile, STDOUT_FILENO) == -1) {
+        return EXIT_FAILURE;
+    }
     close(pipeFile[0]);
     close(pipeFile[1]);
     close(outFile);
