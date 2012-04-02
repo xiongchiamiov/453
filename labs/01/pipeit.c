@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) {
     close(pipeFile[1]);
     
     while (waitpid(pid[0], &status[0], 0) == -1) {};
-    printf("Exit status of %d was %d\n", pid[0], WEXITSTATUS(status[0]));
+    /*printf("Exit status of %d was %d\n", pid[0], WEXITSTATUS(status[0]));*/
     while (waitpid(pid[1], &status[1], 0) == -1) {};
-    printf("Exit status of %d was %d\n", pid[1], WEXITSTATUS(status[1]));
+    /*printf("Exit status of %d was %d\n", pid[1], WEXITSTATUS(status[1]));*/
     
     return (WEXITSTATUS(status[0]) == EXIT_SUCCESS
          && WEXITSTATUS(status[1]) == EXIT_SUCCESS)
