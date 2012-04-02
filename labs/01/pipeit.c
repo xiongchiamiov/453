@@ -17,19 +17,40 @@
  * @return 0 on success, 1-255 on failure
  */
 int main(int argc, char *argv[]) {
+    int pid[2];
     int pipeFile[2];
+    int status[2];
     
     pipe(pipeFile);
     
-    if (fork() == 0) {
+    /* Fork and exec our first child, for ls.*/
+    if ((pid[0] = fork()) == 0) {
         return doLsChild(pipeFile);
+    } else if (pid[0] == -1) {
+        return EXIT_FAILURE;
     }
-    if (fork() == 0) {
+    /* And the second one, sort.*/
+    if ((pid[1] = fork()) == 0) {
         return doSortChild(pipeFile);
+    } else if (pid[1] == -1) {
+        return EXIT_FAILURE;
     }
     
     /*printf("Parent\n");*/
-    return EXIT_SUCCESS;
+    /* We aren't using these, and the sort-child needs 'em closed to know it's
+     * done. */
+    close(pipeFile[0]);
+    close(pipeFile[1]);
+    
+    while (waitpid(pid[0], &status[0], 0) == -1) {};
+    printf("Exit status of %d was %d\n", pid[0], WEXITSTATUS(status[0]));
+    while (waitpid(pid[1], &status[1], 0) == -1) {};
+    printf("Exit status of %d was %d\n", pid[1], WEXITSTATUS(status[1]));
+    
+    return (WEXITSTATUS(status[0]) == EXIT_SUCCESS
+         && WEXITSTATUS(status[1]) == EXIT_SUCCESS)
+           ? EXIT_SUCCESS
+           : EXIT_FAILURE;
 }
 
 int doLsChild(int pipeFile[]) {
@@ -37,7 +58,6 @@ int doLsChild(int pipeFile[]) {
     
     dup2(pipeFile[1], STDOUT_FILENO);
     close(pipeFile[0]);
-    /*write(pipeFile[1], "hello", 6);*/
     close(pipeFile[1]);
     execlp("ls", "ls");
     return EXIT_SUCCESS;
