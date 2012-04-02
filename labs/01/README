@@ -1,0 +1,8 @@
+James Pearson (jmpearso)
+
+The default make task builds and runs the program; use `make build` to just
+build it.
+
+Been over three years since I've written any C.  Seems to have gone well,
+considering. ;)
+

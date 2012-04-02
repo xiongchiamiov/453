@@ -15,8 +15,10 @@ ALL=run
 
 all:	$(ALL)
 
-run: pipeit
+run: build
 	./pipeit
+
+build: pipeit
 
 pipeit:	pipeit.o
 	$(CC) $(LDFLAGS) -o $@ $^

@@ -53,16 +53,25 @@ int main(int argc, char *argv[]) {
            : EXIT_FAILURE;
 }
 
+/**
+ * Do the stuff for the child who execs `ls`.
+ * @param pipeFile a two-element array with file descriptors for the pipe.
+ * @return None; exec takes over the process.
+ */
 int doLsChild(int pipeFile[]) {
     /*printf("Child 1\n");*/
     
     dup2(pipeFile[1], STDOUT_FILENO);
     close(pipeFile[0]);
     close(pipeFile[1]);
-    execlp("ls", "ls");
-    return EXIT_SUCCESS;
+    return execlp("ls", "ls");
 }
 
+/**
+ * Do the stuff for the child who execs `sort`.
+ * @param pipeFile a two-element array with file descriptors for the pipe.
+ * @return None; exec takes over the process.
+ */
 int doSortChild(int pipeFile[]) {
     /*printf("Child 2\n");*/
     
@@ -76,7 +85,6 @@ int doSortChild(int pipeFile[]) {
     close(pipeFile[1]);
     close(outFile);
     
-    execlp("sort", "sort", "-r", (char*)NULL);
-    return EXIT_SUCCESS;
+    return execlp("sort", "sort", "-r", (char*)NULL);
 }
 
