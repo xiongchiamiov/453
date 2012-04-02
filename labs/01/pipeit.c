@@ -25,7 +25,16 @@ int main(int argc, char *argv[]) {
     
     /* Fork and exec our first child, for ls.*/
     if ((pid[0] = fork()) == 0) {
-        return doLsChild(pipeFile);
+        /* This used to be in a function, but vogon was really unhappy with it;
+         * 'ls: cannot access ?|:' */
+        /*printf("Child 1\n");*/
+        
+        if (dup2(pipeFile[1], STDOUT_FILENO) == -1) {
+            return EXIT_FAILURE;
+        }
+        close(pipeFile[0]);
+        close(pipeFile[1]);
+        return execlp("ls", "ls");
     } else if (pid[0] == -1) {
         return EXIT_FAILURE;
     }
@@ -53,19 +62,7 @@ int main(int argc, char *argv[]) {
            : EXIT_FAILURE;
 }
 
-/**
- * Do the stuff for the child who execs `ls`.
- * @param pipeFile a two-element array with file descriptors for the pipe.
- * @return None; exec takes over the process.
- */
-int doLsChild(int pipeFile[]) {
-    /*printf("Child 1\n");*/
-    
-    if (dup2(pipeFile[1], STDOUT_FILENO) == -1) {
-        return EXIT_FAILURE;
-    }
-    close(pipeFile[0]);
-    close(pipeFile[1]);
+int doLsChild() {
     return execlp("ls", "ls");
 }
 
