@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <string.h>
 #include <unistd.h>
 
 #define CHUNK_SIZE 65536

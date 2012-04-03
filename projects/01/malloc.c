@@ -75,7 +75,12 @@ MemoryHeader * findFreeMemory(MemoryHeader * memoryList, size_t desiredSize) {
  * @param size size of objects
  * @return pointer to allocated memory on success, NULL on failure
  */
-void * calloc(size_t count, size_t size);
+void * calloc(size_t count, size_t size) {
+    void * allocatedMemory = malloc(count * size);
+    memset(allocatedMemory, 0, count * size);
+    
+    return allocatedMemory;
+}
 
 /**
  * Try to resize a chunk of allocated memory.
