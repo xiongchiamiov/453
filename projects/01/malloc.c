@@ -33,7 +33,7 @@ void * malloc(size_t size) {
     
     /* Traverse list looking for free memory.  If we don't find enough, try to
      * get more from the system. */
-    while ((freeMemory = findFreeMemory(gMemoryListHead, size)) == NULL) {
+    while ((freeMemory = _find_free_memory(gMemoryListHead, size)) == NULL) {
         newChunk =  sbrk(SBRK_SIZE);
         /* No more memory available? Bail. */
         if ((int)newChunk == -1) {
@@ -132,7 +132,7 @@ int _initialize_gMemoryList() {
  * @param desiredSize amount of memory we need free
  * @return pointer to MemoryHeader with free memory on success, NULL on failure
  */
-MemoryHeader * findFreeMemory(MemoryHeader * memoryList, size_t desiredSize) {
+MemoryHeader * _find_free_memory(MemoryHeader * memoryList, size_t desiredSize) {
     /* Have we reached the end of the list? */
     if (memoryList == NULL) {
         return NULL;
@@ -145,6 +145,6 @@ MemoryHeader * findFreeMemory(MemoryHeader * memoryList, size_t desiredSize) {
     }
     
     /* Recurse on down the list. */
-    return findFreeMemory(memoryList->nextHeader, desiredSize);
+    return _find_free_memory(memoryList->nextHeader, desiredSize);
 }
 

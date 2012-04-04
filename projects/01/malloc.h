@@ -31,7 +31,7 @@ void * malloc(size_t size);
 void free(void * ptr);
 void * realloc(void * ptr, size_t size);
 
-MemoryHeader * findFreeMemory(MemoryHeader * memoryList, size_t desiredSize);
+MemoryHeader * _find_free_memory(MemoryHeader * memoryList, size_t desiredSize);
 int _initialize_gMemoryList();
 
 #endif
