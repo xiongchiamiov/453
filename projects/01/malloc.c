@@ -11,7 +11,8 @@
 
 #include "malloc.h"
 
-MemoryHeader * gMemoryList = NULL;
+MemoryHeader * gMemoryListHead = NULL;
+MemoryHeader * gMemoryListTail = NULL;
 
 /** 
  * @param size bytes of memory to allocate
@@ -22,51 +23,48 @@ void * malloc(size_t size) {
     void * newChunk;
     MemoryHeader * newHeader;
     
+    /* Make sure we have some memory to start working with. */
+    if (gMemoryListHead == NULL) {
+        if (_initialize_gMemoryList() == EXIT_FAILURE) {
+            errno = ENOMEM;
+            return NULL;
+        }
+    }
+    
     /* Traverse list looking for free memory.  If we don't find enough, try to
      * get more from the system. */
-    while ((freeMemory = findFreeMemory(gMemoryList, size)) == NULL) {
-        newChunk =  sbrk(CHUNK_SIZE);
+    while ((freeMemory = findFreeMemory(gMemoryListHead, size)) == NULL) {
+        newChunk =  sbrk(SBRK_SIZE);
         /* No more memory available? Bail. */
         if ((int)newChunk == -1) {
             errno = ENOMEM;
             return NULL;
         }
         
-        /* Add the new memory into our list */
-        newHeader = newChunk;
-        newHeader->memoryAllocated = FALSE;
-        newHeader->memorySize = CHUNK_SIZE - sizeof(MemoryHeader);
-        newHeader->memory = (void *)((int)newChunk - sizeof(MemoryHeader));
-        newHeader->nextHeader = gMemoryList;
-        gMemoryList = newHeader;
+        /* Add the new memory onto the end of our list */
+        assert(gMemoryListTail->memoryAllocated == FALSE);
+        gMemoryListTail->memorySize += SBRK_SIZE;
     }
     
     /* Update list to set memory as allocated. */
     freeMemory->memoryAllocated = TRUE;
+    
+    /* Create a new header for the rest of the free memory. */
+    newHeader = (void *)((size_t)(freeMemory->memory) + size);
+    newHeader->memoryAllocated = FALSE;
+    newHeader->memorySize = freeMemory->memorySize - size - sizeof(MemoryHeader);
+    newHeader->memory = (void *)((int)newHeader + sizeof(MemoryHeader));
+    if (freeMemory == gMemoryListTail) {
+        newHeader->nextHeader = NULL;
+        gMemoryListTail->nextHeader = newHeader;
+        gMemoryListTail = newHeader;
+    } else {
+        newHeader->nextHeader = freeMemory->nextHeader;
+        freeMemory->nextHeader = newHeader;
+    }
+    
     /* Return pointer to memory. */
     return freeMemory->memory;
-}
-
-/**
- * Search through a list of MemoryHeader-s to find one with free memory.
- * @param memoryList pointer to the MemoryHeader at the start of the list
- * @param desiredSize amount of memory we need free
- * @return pointer to MemoryHeader with free memory on success, NULL on failure
- */
-MemoryHeader * findFreeMemory(MemoryHeader * memoryList, size_t desiredSize) {
-    /* Have we reached the end of the list? */
-    if (memoryList == NULL) {
-        return NULL;
-    }
-    
-    /* Got enough free space here? */
-    if (memoryList->memoryAllocated == FALSE
-     && memoryList->memorySize >= desiredSize) {
-        return memoryList;
-    }
-    
-    /* Recurse on down the list. */
-    return findFreeMemory(memoryList->nextHeader, desiredSize);
 }
 
 /**
@@ -95,4 +93,58 @@ void * realloc(void * ptr, size_t size);
  * @param ptr pointer to the memory to be freed
  */
 void free(void * ptr);
+
+/*************************/
+/*** Utility functions ***/
+/*************************/
+
+/**
+ * Do some initial setup of our global memory list.
+ * @return EXIT_SUCESS on success, EXIT_FAILURE on failure.
+ */
+int _initialize_gMemoryList() {
+    void * newChunk;
+    newChunk = sbrk(SBRK_SIZE);
+
+    assert(gMemoryListHead == NULL);
+    assert(gMemoryListTail == NULL);
+    
+    /* No more memory available? Bail. */
+    if ((int)newChunk == -1) {
+        errno = ENOMEM;
+        return EXIT_FAILURE;
+    }
+    
+    gMemoryListHead = newChunk;
+    gMemoryListHead->memoryAllocated = FALSE;
+    gMemoryListHead->memorySize = SBRK_SIZE - sizeof(MemoryHeader);
+    gMemoryListHead->memory = (void *)((int)newChunk + sizeof(MemoryHeader));
+    gMemoryListHead->nextHeader = NULL;
+    
+    gMemoryListTail = gMemoryListHead;
+    
+    return EXIT_SUCCESS;
+}
+
+/**
+ * Search through a list of MemoryHeader-s to find one with free memory.
+ * @param memoryList pointer to the MemoryHeader at the start of the list
+ * @param desiredSize amount of memory we need free
+ * @return pointer to MemoryHeader with free memory on success, NULL on failure
+ */
+MemoryHeader * findFreeMemory(MemoryHeader * memoryList, size_t desiredSize) {
+    /* Have we reached the end of the list? */
+    if (memoryList == NULL) {
+        return NULL;
+    }
+    
+    /* Got enough free space here? */
+    if (memoryList->memoryAllocated == FALSE
+     && memoryList->memorySize >= desiredSize) {
+        return memoryList;
+    }
+    
+    /* Recurse on down the list. */
+    return findFreeMemory(memoryList->nextHeader, desiredSize);
+}
 
