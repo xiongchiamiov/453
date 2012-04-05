@@ -3,5 +3,7 @@
 
 #include <stdlib.h>
 
+#define DEBUG_MALLOC
+
 #endif
 

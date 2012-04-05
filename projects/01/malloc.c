@@ -63,6 +63,11 @@ void * malloc(size_t size) {
         freeMemory->nextHeader = newHeader;
     }
     
+    #ifdef DEBUG_MALLOC
+        fprintf(stderr, "MALLOC: malloc(%d)       =>  (ptr=0x%8x, size=%d)",
+                size, freeMemory->memory, freeMemory->size);
+    #endif
+    
     /* Return pointer to memory. */
     return freeMemory->memory;
 }
@@ -76,6 +81,11 @@ void * malloc(size_t size) {
 void * calloc(size_t count, size_t size) {
     void * allocatedMemory = malloc(count * size);
     memset(allocatedMemory, 0, count * size);
+    
+    #ifdef DEBUG_MALLOC
+        fprintf(stderr, "MALLOC: calloc(%d, %d)   =>  (ptr=0x%8x, size=%d)",
+                count, size, allocatedMemory->memory, allocatedMemory->size);
+    #endif
     
     return allocatedMemory;
 }
