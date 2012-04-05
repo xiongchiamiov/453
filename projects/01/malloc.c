@@ -23,6 +23,10 @@ void * malloc(size_t size) {
     void * newChunk;
     MemoryHeader * newHeader;
     
+    if (getenv("SUPER_DEBUG_MALLOC")) {
+        fprintf(stderr, "malloc(%ld)\n", (long)size);
+    }
+    
     /* Make sure we have some memory to start working with. */
     if (gMemoryListHead == NULL) {
         if (_initialize_gMemoryList() == EXIT_FAILURE) {
@@ -44,6 +48,11 @@ void * malloc(size_t size) {
         /* Add the new memory onto the end of our list */
         assert(gMemoryListTail->memoryAllocated == FALSE);
         gMemoryListTail->memorySize += SBRK_SIZE;
+
+        if (getenv("SUPER_DEBUG_MALLOC")) {
+            fprintf(stderr, "new memory size: %ld\n",
+                    (long)gMemoryListTail->memorySize);
+        }
     }
     
     /* Update list to set memory as allocated. */
@@ -117,6 +126,11 @@ void free(void * ptr);
  */
 int _initialize_gMemoryList() {
     void * newChunk;
+    
+    if (getenv("SUPER_DEBUG_MALLOC")) {
+        fprintf(stderr, "_initialize_gMemoryList()\n");
+    }
+    
     newChunk = sbrk(SBRK_SIZE);
 
     assert(gMemoryListHead == NULL);
@@ -136,6 +150,11 @@ int _initialize_gMemoryList() {
     
     gMemoryListTail = gMemoryListHead;
     
+    if (getenv("SUPER_DEBUG_MALLOC")) {
+        fprintf(stderr, "starting off with memory size: %ld\n",
+                (long)gMemoryListTail->memorySize);
+    }
+    
     return EXIT_SUCCESS;
 }
 
@@ -147,6 +166,10 @@ int _initialize_gMemoryList() {
  */
 MemoryHeader * _find_free_memory(MemoryHeader * memoryList,
                                  size_t desiredSize) {
+    if (getenv("SUPER_DEBUG_MALLOC")) {
+        fprintf(stderr, "_find_free_memory()\n");
+    }
+    
     /* Have we reached the end of the list? */
     if (memoryList == NULL) {
         return NULL;
