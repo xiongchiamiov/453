@@ -11,14 +11,16 @@ HARDEN=-D_FORTIFY_SOURCE
 CFLAGS=-Wall -g -std=c89 -pedantic $(SUS3) $(HARDEN)
 LDFLAGS=
 
-ALL=run
+ALL=malloc.o
 
 all:	$(ALL)
 
 run: build
-	./test
+	./test-malloc
 
-build: test
+test: run
+
+build: test-malloc
 
 libmalloc.a: malloc.o
 	ar r libmalloc.a malloc.o
@@ -26,11 +28,11 @@ libmalloc.a: malloc.o
 malloc.o: malloc.c malloc.h
 	$(CC) $(CFLAGS) -c $<
 
-test:	test.o libmalloc.a
+test-malloc:	test.o libmalloc.a
 	$(CC) $(LDFLAGS) -o $@ $^
 
 test.o: test.c test.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -rf core* *.o *.gch $(ALL)
+	rm -rf core* *.o *.gch libmalloc.a test-malloc $(ALL)
