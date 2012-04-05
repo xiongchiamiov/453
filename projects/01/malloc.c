@@ -109,12 +109,14 @@ void * calloc(size_t count, size_t size) {
  * @return pointer to allocated memory on success, NULL on failure
  */
 void * realloc(void * ptr, size_t size);
+/* Use _find_address_owner */
 
 /**
  * Deallocate memory.
  * @param ptr pointer to the memory to be freed
  */
 void free(void * ptr);
+/* Use _find_address_owner */
 
 /*************************/
 /*** Utility functions ***/
