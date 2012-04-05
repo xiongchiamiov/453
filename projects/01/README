@@ -1,0 +1,14 @@
+James Pearson (jmpearso)
+
+`make` builds malloc.o; there is a `libmalloc.a` task as well, if you'd like
+it.
+
+Running the simple included test program (`make test`) segfaults, which is a
+bad sign, since it only calls malloc and free one time each.  So, I don't
+expect you'll be able to get this to do much of anything useful.
+
+I didn't put nearly enough time into this program, in large part because I kept
+pushing back lab 1 due to my reluctance to work again in C. :)  Late days would
+be of no use, however, since I wouldn't be able to work on it until Monday, so
+I'll take the grade I get.
+

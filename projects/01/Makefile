@@ -35,7 +35,7 @@ test.o: test.c test.h
 	$(CC) $(CFLAGS) -c $<
 
 handin:
-	handin pn-cs453 asgn1 Makefile malloc.c malloc.h test.c test.h
+	handin pn-cs453 asgn1 README Makefile malloc.c malloc.h test.c test.h
 
 clean:
 	rm -rf core* *.o *.gch libmalloc.a test-malloc $(ALL)
