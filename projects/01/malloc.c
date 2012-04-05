@@ -40,7 +40,7 @@ void * malloc(size_t size) {
     while ((freeMemory = _find_free_memory(gMemoryListHead, size)) == NULL) {
         newChunk =  sbrk(SBRK_SIZE);
         /* No more memory available? Bail. */
-        if ((int)newChunk == -1) {
+        if ((size_t)newChunk == -1) {
             errno = ENOMEM;
             return NULL;
         }
@@ -64,7 +64,7 @@ void * malloc(size_t size) {
     newHeader->memorySize = freeMemory->memorySize
                           - size
                           - sizeof(MemoryHeader);
-    newHeader->memory = (void *)((int)newHeader + sizeof(MemoryHeader));
+    newHeader->memory = (void *)((size_t)newHeader + sizeof(MemoryHeader));
     if (freeMemory == gMemoryListTail) {
         newHeader->nextHeader = NULL;
         gMemoryListTail->nextHeader = newHeader;
@@ -75,8 +75,8 @@ void * malloc(size_t size) {
     }
     
     if (getenv("DEBUG_MALLOC")) {
-        fprintf(stderr, "MALLOC: malloc(%ld)       =>  (ptr=0x%8x, size=%ld)",
-                (long)size, (int)(freeMemory->memory),
+        fprintf(stderr, "MALLOC: malloc(%ld)       =>  (ptr=0x%8ld, size=%ld)",
+                (long)size, (long)(freeMemory->memory),
                 (long)(freeMemory->memorySize));
     }
     
@@ -95,8 +95,8 @@ void * calloc(size_t count, size_t size) {
     memset(allocatedMemory, 0, count * size);
     
     if (getenv("DEBUG_MALLOC")) {
-        fprintf(stderr, "MALLOC: calloc(%ld, %ld)   =>  (ptr=0x%8x)",
-                (long)count, (long)size, (int)(allocatedMemory));
+        fprintf(stderr, "MALLOC: calloc(%ld, %ld)   =>  (ptr=0x%8ld)",
+                (long)count, (long)size, (long)(allocatedMemory));
     }
     
     return allocatedMemory;
@@ -137,7 +137,7 @@ int _initialize_gMemoryList() {
     assert(gMemoryListTail == NULL);
     
     /* No more memory available? Bail. */
-    if ((int)newChunk == -1) {
+    if ((size_t)newChunk == -1) {
         errno = ENOMEM;
         return EXIT_FAILURE;
     }
@@ -145,7 +145,7 @@ int _initialize_gMemoryList() {
     gMemoryListHead = newChunk;
     gMemoryListHead->memoryAllocated = FALSE;
     gMemoryListHead->memorySize = SBRK_SIZE - sizeof(MemoryHeader);
-    gMemoryListHead->memory = (void *)((int)newChunk + sizeof(MemoryHeader));
+    gMemoryListHead->memory = (void *)((size_t)newChunk + sizeof(MemoryHeader));
     gMemoryListHead->nextHeader = NULL;
     
     gMemoryListTail = gMemoryListHead;
