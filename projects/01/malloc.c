@@ -205,8 +205,9 @@ MemoryHeader * _find_address_owner(MemoryHeader * memoryList, void * address) {
     }
     
     /* Are we bounding address? */
-    if (address >= memoryList->memory
-     && (size_t)address <= (size_t)(memoryList->memory) + memoryList->memorySize) {
+    if ((size_t)address >= (size_t)(memoryList->memory)
+     && (size_t)address <= (size_t)(memoryList->memory)
+                         + memoryList->memorySize) {
         return memoryList;
     }
     
