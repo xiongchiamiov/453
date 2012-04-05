@@ -100,7 +100,7 @@ void free(void * ptr);
 
 /**
  * Do some initial setup of our global memory list.
- * @return EXIT_SUCESS on success, EXIT_FAILURE on failure.
+ * @return EXIT_SUCCESS on success, EXIT_FAILURE on failure.
  */
 int _initialize_gMemoryList() {
     void * newChunk;
