@@ -160,6 +160,7 @@ int _initialize_gMemoryList() {
 
 /**
  * Search through a list of MemoryHeader-s to find one with free memory.
+ * TODO: DRY out this and _find_address_owner.
  * @param memoryList pointer to the MemoryHeader at the start of the list
  * @param desiredSize amount of memory we need free
  * @return pointer to MemoryHeader with free memory on success, NULL on failure
@@ -183,5 +184,33 @@ MemoryHeader * _find_free_memory(MemoryHeader * memoryList,
     
     /* Recurse on down the list. */
     return _find_free_memory(memoryList->nextHeader, desiredSize);
+}
+
+/**
+ * Search through a list of MemoryHeader-s to find the one that "owns" a
+ * particular address in memory.
+ * TODO: DRY out this and _find_free_memory.
+ * @param memoryList pointer to the MemoryHeader at the start of the list
+ * @param address a pointer to an address in memory we're trying to parent
+ * @return pointer to MemoryHeader owning address on success, NULL on failure
+ */
+MemoryHeader * _find_address_owner(MemoryHeader * memoryList, void * address) {
+    if (getenv("SUPER_DEBUG_MALLOC")) {
+        fprintf(stderr, "_find_address_owner()\n");
+    }
+    
+    /* Have we reached the end of the list? */
+    if (memoryList == NULL) {
+        return NULL;
+    }
+    
+    /* Are we bounding address? */
+    if (address >= memoryList->memory
+     && (size_t)address <= (size_t)(memoryList->memory) + memoryList->memorySize) {
+        return memoryList;
+    }
+    
+    /* Recurse on down the list. */
+    return _find_address_owner(memoryList->nextHeader, address);
 }
 
