@@ -16,7 +16,7 @@ ALL=malloc.o
 all:	$(ALL)
 
 run: build
-	./test-malloc
+	DEBUG_MALLOC= ./test-malloc
 
 test: run
 
