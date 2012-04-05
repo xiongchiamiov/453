@@ -52,7 +52,9 @@ void * malloc(size_t size) {
     /* Create a new header for the rest of the free memory. */
     newHeader = (void *)((size_t)(freeMemory->memory) + size);
     newHeader->memoryAllocated = FALSE;
-    newHeader->memorySize = freeMemory->memorySize - size - sizeof(MemoryHeader);
+    newHeader->memorySize = freeMemory->memorySize
+                          - size
+                          - sizeof(MemoryHeader);
     newHeader->memory = (void *)((int)newHeader + sizeof(MemoryHeader));
     if (freeMemory == gMemoryListTail) {
         newHeader->nextHeader = NULL;
@@ -143,7 +145,8 @@ int _initialize_gMemoryList() {
  * @param desiredSize amount of memory we need free
  * @return pointer to MemoryHeader with free memory on success, NULL on failure
  */
-MemoryHeader * _find_free_memory(MemoryHeader * memoryList, size_t desiredSize) {
+MemoryHeader * _find_free_memory(MemoryHeader * memoryList,
+                                 size_t desiredSize) {
     /* Have we reached the end of the list? */
     if (memoryList == NULL) {
         return NULL;
