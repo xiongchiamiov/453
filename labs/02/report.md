@@ -1,3 +1,6 @@
+James Pearson (jmpearso)  
+CPE 453-09
+
 # Get a Minix System
 
 ## Approach
