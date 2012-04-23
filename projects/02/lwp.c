@@ -1,5 +1,9 @@
 #include "lwp.h"
 
+#include <unistd.h>
+
+schedfun gScheduler = NULL;
+
 /**
  * Creates a new lightweight process which calls the given function with the
  * given argument.  The new process's stack will be `stacksize` words.  The
@@ -54,5 +58,7 @@ void lwp_stop();
  * If `scheduler` is null or has never been set, the scheduler should do
  * round-robin scheduling.
  */
-void lwp_set_scheduler(schedfun scheduler);
+void lwp_set_scheduler(schedfun scheduler) {
+	gScheduler = scheduler;
+}
 
