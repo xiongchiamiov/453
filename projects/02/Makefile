@@ -21,6 +21,12 @@ liblwp.a: lwp.o
 lwp.o: lwp.c lwp.h
 	$(CC) $(CFLAGS) -c $<
 
+numbers-test: numbersmain.o libPLN.a
+	$(CC) $(LDFLAGS) -o $@ $^
+
+numbersmain.o: numbersmain.c
+	$(CC) $(CFLAGS) -c $<
+
 handin:
 	handin pn-cs453 asgn2 README Makefile lwp.c lwp.h
 
