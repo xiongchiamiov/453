@@ -1,0 +1,5 @@
+James Pearson (jmpearso)
+
+Since I'm compiling with the c89 standard (to ensure no // comments), I had to
+change the provided macros to use `__asm__` instead of `asm`.
+

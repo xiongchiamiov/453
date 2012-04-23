@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 schedfun gScheduler = NULL;
+void * gStackPointer;
 
 /**
  * Creates a new lightweight process which calls the given function with the
@@ -40,7 +41,23 @@ void lwp_exit();
  * `lwp_stop()` to use later), picks a LWP and start it running.  If there are
  * no LWPs, returns immediately.
  */
-void lwp_start();
+void lwp_start() {
+	if (lwp_procs == 0) {
+		return;
+	}
+	
+	/* Save context for later. */
+	SAVE_STATE();
+	
+	/* Save stack pointer for later. */
+	GetSP(gStackPointer);
+	
+	/* Pick a thread to run. */
+	SetSP(lwp_ptable[gScheduler()].sp);
+	
+	/* And run it. */
+	RESTORE_STATE();
+}
 
 /**
  * Stops the LWP system, restores the original stack pointer and returns to

@@ -57,27 +57,27 @@ extern void lwp_set_scheduler(schedfun sched);
 #define BAILSIGNAL SIGSTKFLT
 
 #define SAVE_STATE() \
-  asm("pushl %%eax":: );\
-  asm("pushl %%ebx":: );\
-  asm("pushl %%ecx":: );\
-  asm("pushl %%edx":: );\
-  asm("pushl %%esi":: );\
-  asm("pushl %%edi":: );\
-  asm("pushl %%ebp":: )
+  __asm__("pushl %%eax":: );\
+  __asm__("pushl %%ebx":: );\
+  __asm__("pushl %%ecx":: );\
+  __asm__("pushl %%edx":: );\
+  __asm__("pushl %%esi":: );\
+  __asm__("pushl %%edi":: );\
+  __asm__("pushl %%ebp":: )
 
-#define GetSP(sp)  asm("movl  %%esp,%0": "=r" (sp) : )
+#define GetSP(sp)  __asm__("movl  %%esp,%0": "=r" (sp) : )
 
-#define SetSP(sp)  asm("movl  %0,%%esp":           : "r" (sp)  )
+#define SetSP(sp)  __asm__("movl  %0,%%esp":           : "r" (sp)  )
 
 #define RESTORE_STATE() \
-  asm("popl  %%ebp":: );\
-  asm("popl  %%edi":: );\
-  asm("popl  %%esi":: );\
-  asm("popl  %%edx":: );\
-  asm("popl  %%ecx":: );\
-  asm("popl  %%ebx":: );\
-  asm("popl  %%eax":: );\
-  asm("movl  %%ebp,%%esp":: )  /* restore esp in case leave is not used */
+  __asm__("popl  %%ebp":: );\
+  __asm__("popl  %%edi":: );\
+  __asm__("popl  %%esi":: );\
+  __asm__("popl  %%edx":: );\
+  __asm__("popl  %%ecx":: );\
+  __asm__("popl  %%ebx":: );\
+  __asm__("popl  %%eax":: );\
+  __asm__("movl  %%ebp,%%esp":: )  /* restore esp in case leave is not used */
 
 #else /* END x86 only code */
 #error "This stack manipulation code can only be compiled on an x86"
