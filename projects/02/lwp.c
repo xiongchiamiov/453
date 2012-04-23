@@ -65,7 +65,16 @@ void lwp_start() {
  * existing contexts, and thread processing will be restarted by a call to
  * `lwp_start()`.
  */
-void lwp_stop();
+void lwp_stop() {
+	/* Save context for later. */
+	SAVE_STATE();
+	
+	/* Reset stack pointer to original context. */
+	SetSP(gStackPointer);
+	
+	/* Continue on our way. */
+	RESTORE_STATE();
+}
 
 /**
  * Causes the LWP package to use the function `scheduler` to choose the next
