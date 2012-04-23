@@ -21,7 +21,9 @@ int new_lwp(lwpfun function, void * argument, size_t stacksize);
 /**
  * @return the pid of the calling LWP.  Undefined if not called by a LWP.
  */
-int lwp_getpid();
+int lwp_getpid() {
+	return lwp_ptable[lwp_running].pid;
+}
 
 /**
  * Yields control to another LWP.  Which one depends on the scheduler.  Saves
