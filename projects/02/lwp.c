@@ -55,7 +55,12 @@ void lwp_start() {
 	GetSP(gStackPointer);
 	
 	/* Pick a thread to run. */
-	lwp_running = gScheduler();
+	if (gScheduler == NULL) {
+		/* Let's start at the very beginning, a very good place to start. */
+		lwp_running = 0;
+	} else {
+		lwp_running = gScheduler();
+	}
 	SetSP(lwp_ptable[lwp_running].sp);
 	
 	/* And run it. */
