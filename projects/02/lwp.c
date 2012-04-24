@@ -1,9 +1,11 @@
 #include "lwp.h"
 
+#include <stdlib.h>
 #include <unistd.h>
 
 schedfun gScheduler = NULL;
 void * gStackPointer;
+unsigned int nextPid = 0;
 
 /**
  * Creates a new lightweight process which calls the given function with the
@@ -16,7 +18,39 @@ void * gStackPointer;
  * @return the lightweight process id of the new thread on success
  *         -1 if more than LWP_PROC_LIMIT threads already exist
  */
-int new_lwp(lwpfun function, void * argument, size_t stacksize);
+int new_lwp(lwpfun function, void * argument, size_t stacksize) {
+	size_t stackSizeInBytes = stacksize * sizeof(int);
+	unsigned long * stackPointer;
+	
+	/* For simplicity's sake, we limit ourselves to a set number of LWPs. */
+	if (lwp_procs == LWP_PROC_LIMIT) {
+		return -1;
+	}
+	/* lwp_running is 0-based, so set it *before* incrementing lwp_procs. */
+	lwp_running = lwp_procs;
+	lwp_procs++;
+	
+	lwp_ptable[lwp_procs].pid = nextPid++;
+	lwp_ptable[lwp_procs].stack = malloc(stackSizeInBytes);
+	lwp_ptable[lwp_procs].stacksize = stacksize;
+	stackPointer = lwp_ptable[lwp_procs].stack + stackSizeInBytes;
+	
+	/* Build up our stack in preparation for lwp_yield. */
+	*stackPointer = (unsigned long)argument;
+	stackPointer -= sizeof(int);
+	*stackPointer = (unsigned long)lwp_exit;
+	stackPointer -= sizeof(int);
+	*stackPointer = (unsigned long)function;
+	stackPointer -= sizeof(int);
+	*stackPointer = (unsigned long)lwp_exit;
+	stackPointer -= sizeof(int);
+	/* Space for the 7 registers SAVE_STATE saves. */
+	stackPointer -= 7 * sizeof(int);
+	
+	lwp_ptable[lwp_procs].sp = stackPointer;
+	
+	return lwp_running;
+}
 
 /**
  * @return the pid of the calling LWP.  Undefined if not called by a LWP.

@@ -11,6 +11,11 @@ typedef struct context_st {
 } lwp_context;
 
 
+/* LWP_PROC_LIMIT is the maximum number of LWPs active */
+#ifndef LWP_PROC_LIMIT
+#define LWP_PROC_LIMIT 30
+#endif
+
 /* Process context information.  "Normally" these would be declared
  * static so that nobody outside the file could look at them, but
  * since we want to make it possible for the user to supply an external
@@ -18,7 +23,7 @@ typedef struct context_st {
  *   (Not really.  A better way would be to have the user supply a comparison
  *    function, but that would make the scheduler much more complicated.)
  */
-extern lwp_context lwp_ptable[];/* the process table           */
+extern lwp_context lwp_ptable[LWP_PROC_LIMIT];/* the process table           */
 extern int lwp_procs;           /* the current number of LWPs  */
 extern int lwp_running;         /* the index of the currently running LWP */
 
@@ -81,11 +86,6 @@ extern void lwp_set_scheduler(schedfun sched);
 
 #else /* END x86 only code */
 #error "This stack manipulation code can only be compiled on an x86"
-#endif
-
-/* LWP_PROC_LIMIT is the maximum number of LWPs active */
-#ifndef LWP_PROC_LIMIT
-#define LWP_PROC_LIMIT 30
 #endif
 
 #endif
