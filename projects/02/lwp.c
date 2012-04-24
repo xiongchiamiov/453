@@ -33,19 +33,19 @@ int new_lwp(lwpfun function, void * argument, size_t stacksize) {
 	lwp_ptable[lwp_procs].pid = nextPid++;
 	lwp_ptable[lwp_procs].stack = malloc(stackSizeInBytes);
 	lwp_ptable[lwp_procs].stacksize = stacksize;
-	stackPointer = lwp_ptable[lwp_procs].stack + stackSizeInBytes;
+	stackPointer = lwp_ptable[lwp_procs].stack;
 	
 	/* Build up our stack in preparation for lwp_yield. */
 	*stackPointer = (unsigned long)argument;
-	stackPointer -= sizeof(int);
+	stackPointer += sizeof(int);
 	*stackPointer = (unsigned long)lwp_exit;
-	stackPointer -= sizeof(int);
+	stackPointer += sizeof(int);
 	*stackPointer = (unsigned long)function;
-	stackPointer -= sizeof(int);
+	stackPointer += sizeof(int);
 	*stackPointer = (unsigned long)lwp_exit;
-	stackPointer -= sizeof(int);
+	stackPointer += sizeof(int);
 	/* Space for the 7 registers SAVE_STATE saves. */
-	stackPointer -= 7 * sizeof(int);
+	stackPointer += 7 * sizeof(int);
 	
 	lwp_ptable[lwp_procs].sp = stackPointer;
 	
