@@ -30,7 +30,29 @@ int lwp_getpid() {
  * the current LWP's context, picks the next one, restores that thread's
  * context, and returns.
  */
-void lwp_yield();
+void lwp_yield() {
+	/* Save context for later. */
+	SAVE_STATE();
+	
+	/* Save stack pointer for later. */
+	GetSP(lwp_ptable[lwp_running].sp);
+	
+	/* Pick a thread to run. */
+	if (gScheduler == NULL) {
+		/* Round-robin. */
+		lwp_running++;
+		/* Go back to the start of the list if we've reached the end. */
+		if (lwp_running == lwp_procs) {
+			lwp_running = 0;
+		}
+	} else {
+		lwp_running = gScheduler();
+	}
+	SetSP(lwp_ptable[lwp_running].sp);
+	
+	/* And run it. */
+	RESTORE_STATE();
+}
 
 /**
  * Terminates the current LWP, frees its resources, and moves all the others up
@@ -56,6 +78,7 @@ void lwp_start() {
 	
 	/* Pick a thread to run. */
 	if (gScheduler == NULL) {
+		/* Round-robin. */
 		/* Let's start at the very beginning, a very good place to start. */
 		lwp_running = 0;
 	} else {
