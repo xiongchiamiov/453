@@ -92,7 +92,23 @@ void lwp_yield() {
  * Terminates the current LWP, frees its resources, and moves all the others up
  * in the process table.  If there are no other threads, calls `lwp_stop()`.
  */
-void lwp_exit();
+void lwp_exit() {
+	int i;
+	
+	/* Return thread's stack to system. */
+	free(lwp_ptable[lwp_running].stack);
+	
+	/* Shift the process table. */
+	for (i=lwp_running+1; i<lwp_procs; i++) {
+		lwp_ptable[i-1] = lwp_ptable[i];
+	}
+	
+	/* Stop if we don't have any more threads. */
+	lwp_procs--;
+	if (lwp_procs == 0) {
+		lwp_stop();
+	}
+}
 
 /**
  * Starts the LWP system.  Saves the original context and stack pointer (for
