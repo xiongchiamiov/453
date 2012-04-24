@@ -21,6 +21,9 @@ liblwp.a: lwp.o
 lwp.o: lwp.c lwp.h
 	$(CC) $(CFLAGS) -c $<
 
+numbers: numbersmain.o liblwp.a
+	$(CC) $(LDFLAGS) -o $@ $^
+
 numbers-test: numbersmain.o libPLN.a
 	$(CC) $(LDFLAGS) -o $@ $^
 
