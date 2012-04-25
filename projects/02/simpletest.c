@@ -9,6 +9,7 @@ static void test(void *);
 static void test_without_exit(void *);
 static void test_param(void *);
 static void test_pid(void *);
+static void test_proc_count(void *);
 
 int main(int argc, char *argv[]){
     /* Returns immediately. */
@@ -39,6 +40,12 @@ int main(int argc, char *argv[]){
     
     printf("Expected: PID is 3\n----\n");
     new_lwp(test_pid, (void *)212, 256);
+    lwp_start();
+
+    printf("---------------------------------\n");
+    
+    printf("Expected: There are 1 running threads.\n----\n");
+    new_lwp(test_proc_count, (void *)212, 256);
     lwp_start();
 
     printf("---------------------------------\n");
@@ -76,5 +83,11 @@ static void test_pid(void * bar) {
     GetSP(sp);
     GetBP(bp);
     printf("PID is %d\n", lwp_getpid());
+}
+
+static void test_proc_count(void * bar) {
+    GetSP(sp);
+    GetBP(bp);
+    printf("There are %d threads running.\n", lwp_procs);
 }
 
