@@ -124,6 +124,19 @@ void lwp_exit() {
 	lwp_procs--;
 	if (lwp_procs == 0) {
 		lwp_stop();
+	} else {
+		/* Pick a thread to run. */
+		if (gScheduler == NULL) {
+			/* Round-robin. */
+			/* Let's start at the very beginning, a very good place to start. */
+			lwp_running = 0;
+		} else {
+			lwp_running = gScheduler();
+		}
+		SetSP(lwp_ptable[lwp_running].sp);
+		
+		/* And run it. */
+		RESTORE_STATE();
 	}
 }
 
