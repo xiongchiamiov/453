@@ -30,8 +30,14 @@ numbers-test: numbersmain.o libPLN.a
 numbersmain.o: numbersmain.c
 	$(CC) $(CFLAGS) -c $<
 
+simpletest: simpletest.o liblwp.a
+	$(CC) $(LDFLAGS) -o $@ $^
+
+simpletest.o: simpletest.c
+	$(CC) $(CFLAGS) -c $<
+
 handin:
-	handin pn-cs453 asgn2 README Makefile lwp.c lwp.h
+	handin pn-cs453 asgn2 README Makefile lwp.c lwp.h simpletest.c
 
 clean:
 	rm -rf core* *.o *.gch liblwp.a $(ALL)
