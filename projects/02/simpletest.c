@@ -8,6 +8,7 @@ unsigned long * bp;
 static void test(void *);
 static void test_without_exit(void *);
 static void test_param(void *);
+static void test_pid(void *);
 
 int main(int argc, char *argv[]){
     /* Returns immediately. */
@@ -33,6 +34,12 @@ int main(int argc, char *argv[]){
     printf("Expected: Bar is 212\n----\n");
     new_lwp(test_param, (void *)212, 256);
     lwp_start();
+
+    printf("---------------------------------\n");
+    
+    printf("Expected: PID is 3\n----\n");
+    new_lwp(test_pid, (void *)212, 256);
+    lwp_start();
     
     return 0;
 }
@@ -56,5 +63,11 @@ static void test_param(void * bar) {
     GetSP(sp);
     GetBP(bp);
     printf("Bar is %d\n", (int)bar);
+}
+
+static void test_pid(void * bar) {
+    GetSP(sp);
+    GetBP(bp);
+    printf("PID is %d\n", lwp_getpid());
 }
 
