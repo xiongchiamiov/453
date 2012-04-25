@@ -7,9 +7,9 @@ schedfun gScheduler = NULL;
 void * gStackPointer;
 unsigned int nextPid = 0;
 
-lwp_context lwp_ptable[LWP_PROC_LIMIT];/* the process table           */
-int lwp_procs;           /* the current number of LWPs  */
-int lwp_running;         /* the index of the currently running LWP */
+lwp_context lwp_ptable[LWP_PROC_LIMIT];/* the process table                      */
+int lwp_procs = 0;                     /* the current number of LWPs             */
+int lwp_running;                       /* the index of the currently running LWP */
 
 /**
  * Creates a new lightweight process which calls the given function with the
