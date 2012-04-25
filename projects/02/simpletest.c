@@ -40,6 +40,13 @@ int main(int argc, char *argv[]){
     printf("Expected: PID is 3\n----\n");
     new_lwp(test_pid, (void *)212, 256);
     lwp_start();
+
+    printf("---------------------------------\n");
+    
+    printf("Expected: Hallow thar! x 2\n----\n");
+    new_lwp(test, (void *)212, 256);
+    new_lwp(test, (void *)213, 256);
+    lwp_start();
     
     return 0;
 }
