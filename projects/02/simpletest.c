@@ -50,9 +50,9 @@ int main(int argc, char *argv[]){
 
     printf("---------------------------------\n");
     
-    printf("Expected: Hallow thar! x 2\n----\n");
-    new_lwp(test, (void *)212, 256);
-    new_lwp(test, (void *)213, 256);
+    printf("Expected: There are (2,1) threads running.\n----\n");
+    new_lwp(test_proc_count, (void *)212, 256);
+    new_lwp(test_proc_count, (void *)213, 256);
     lwp_start();
     
     return 0;
