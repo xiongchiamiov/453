@@ -36,6 +36,12 @@ simpletest: simpletest.o liblwp.a
 simpletest.o: simpletest.c
 	$(CC) $(CFLAGS) -c $<
 
+snakes: snakemain.o liblwp.a libsnakes.a
+	$(CC) $(LDFLAGS) -lncurses -o $@ $^
+
+snakemain.o: snakemain.c snakes.h
+	$(CC) $(CFLAGS) -c $<
+
 handin:
 	handin pn-cs453 asgn2 README Makefile lwp.c lwp.h simpletest.c
 
