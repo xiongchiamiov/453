@@ -25,6 +25,7 @@ int lwp_running;         /* the index of the currently running LWP */
 int new_lwp(lwpfun function, void * argument, size_t stacksize) {
 	size_t stackSizeInBytes = stacksize * sizeof(int);
 	unsigned long * stackPointer;
+	unsigned long * basePointer;
 	
 	/* For simplicity's sake, we limit ourselves to a set number of LWPs. */
 	if (lwp_procs == LWP_PROC_LIMIT) {
@@ -37,19 +38,27 @@ int new_lwp(lwpfun function, void * argument, size_t stacksize) {
 	lwp_ptable[lwp_running].pid = nextPid++;
 	lwp_ptable[lwp_running].stack = malloc(stackSizeInBytes);
 	lwp_ptable[lwp_running].stacksize = stacksize;
-	stackPointer = lwp_ptable[lwp_running].stack;
 	
 	/* Build up our stack in preparation for lwp_yield. */
-	*stackPointer = (unsigned long)argument;
-	stackPointer += sizeof(int);
-	*stackPointer = (unsigned long)lwp_exit;
-	stackPointer += sizeof(int);
-	*stackPointer = (unsigned long)function;
-	stackPointer += sizeof(int);
-	*stackPointer = (unsigned long)lwp_exit;
-	stackPointer += sizeof(int);
+	/* I am constantly confused about what the stack is supposed to look like.
+	 * In particular, vertical representations don't help at all, since I view
+	 * memory as going from left to right.  This is the current assumption:
+	 *
+	 * [ s t u f f ]    #######[ space for more stuff ]
+	 *              |_________| memory available for the stack to use
+	 *                  ^ stack pointer (top of stack)
+	 *                         ^ memory available to the process
+	 */
+	stackPointer = lwp_ptable[lwp_running].stack + stackSizeInBytes;
+	/*basePointer = stackPointer;*/
+	*stackPointer = (unsigned long)argument; /* Arg 0 */
+	stackPointer--;
+	*stackPointer = (unsigned long)function; /* Return Address */
+	stackPointer--;
+	basePointer = stackPointer;
 	/* Space for the 7 registers SAVE_STATE saves. */
-	stackPointer += 7 * sizeof(int);
+	stackPointer -= 7;
+	*stackPointer = (unsigned long)(basePointer);
 	
 	lwp_ptable[lwp_running].sp = stackPointer;
 	
