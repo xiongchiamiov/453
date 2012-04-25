@@ -45,5 +45,8 @@ snakemain.o: snakemain.c snakes.h
 handin:
 	handin pn-cs453 asgn2 README Makefile lwp.c lwp.h simpletest.c
 
+longlines:
+	~pnico/bin/longlines.pl *.c *.h
+
 clean:
 	rm -rf core* *.o *.gch liblwp.a $(ALL)
