@@ -7,6 +7,7 @@ unsigned long * bp;
 
 static void foo(void *);
 static void foo2(void *);
+static void foo3(void *);
 
 int main(int argc, char *argv[]){
     /* Returns immediately. */
@@ -27,6 +28,12 @@ int main(int argc, char *argv[]){
     new_lwp(foo2, (void *)212, 256);
     lwp_start();
 
+    printf("---------------------------------\n");
+    
+    printf("Expected: Bar is 212\n----\n");
+    new_lwp(foo3, (void *)212, 256);
+    lwp_start();
+    
     return 0;
 }
 
@@ -43,5 +50,11 @@ static void foo2(void * bar) {
     /* This line should not be necessary. */
     /*bp[1] = (unsigned long)lwp_exit;*/
     printf("Hallo thar!\n");
+}
+
+static void foo3(void * bar) {
+    GetSP(sp);
+    GetBP(bp);
+    printf("Bar is %d\n", (int)bar);
 }
 
