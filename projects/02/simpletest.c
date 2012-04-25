@@ -13,6 +13,7 @@ int main(int argc, char *argv[]){
     lwp_start();
 
     /* Prints "Hallo thar!" once and exits. */
+    printf("Expected: Hallo thar!\n----\n");
     new_lwp(foo, (void *)212, 256);
     lwp_start();
 
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]){
     lwp_start();
 
     /* Prints "Hallo thar!" once and exits. */
+    printf("Expected: Hallo thar!\n----\n");
     new_lwp(foo2, (void *)212, 256);
     lwp_start();
 
