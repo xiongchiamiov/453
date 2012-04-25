@@ -71,6 +71,7 @@ extern void lwp_set_scheduler(schedfun sched);
   __asm__("pushl %%ebp":: )
 
 #define GetSP(sp)  __asm__("movl  %%esp,%0": "=r" (sp) : )
+#define GetBP(sp)  __asm__("movl  %%ebp,%0": "=r" (sp) : )
 
 #define SetSP(sp)  __asm__("movl  %0,%%esp":           : "r" (sp)  )
 
