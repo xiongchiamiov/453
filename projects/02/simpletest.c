@@ -1,3 +1,14 @@
+/**
+ * CPE 453 Spring 2012
+ * Assignment 02
+ * https://users.csc.calpoly.edu/~pnico/class/s12/cpe453/asgn/asgn2/asgn2.pdf
+ * 
+ * Simplistic tests of the lwp functions.  Set up so as to require visual
+ * diffing.
+ *
+ * @author James Pearson
+ */
+
 #include "lwp.h"
 
 #include <stdio.h>

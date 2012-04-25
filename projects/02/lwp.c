@@ -1,3 +1,15 @@
+/**
+ * CPE 453 Spring 2012
+ * Assignment 02
+ * https://users.csc.calpoly.edu/~pnico/class/s12/cpe453/asgn/asgn2/asgn2.pdf
+ * 
+ * Implementation of a simplistic threading system.
+ *
+ * Function header comments are stolen directly from the assignment.
+ *
+ * @author James Pearson
+ */
+
 #include "lwp.h"
 
 #include <stdlib.h>

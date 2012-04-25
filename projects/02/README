@@ -1,5 +1,11 @@
 James Pearson (jmpearso)
 
 Since I'm compiling with the c89 standard (to ensure no // comments), I had to
-change the provided macros to use `__asm__` instead of `asm`.
+change the provided macros to use `__asm__` instead of `asm`.  I also added
+SetBP and GetBP macros analogous to SetSP and SetBP for the purposes of
+debugging.
+
+Although my simple tests and numbers work, snakes segfaults; my suspicion is
+this is caused by a segfault in the scheduler part of the code, but I haven't
+looked into it.
 
