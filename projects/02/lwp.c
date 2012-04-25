@@ -51,7 +51,8 @@ int new_lwp(lwpfun function, void * argument, size_t stacksize) {
 	 */
 	stackPointer = lwp_ptable[lwp_running].stack + stackSizeInBytes;
 	basePointer = stackPointer;
-	/**stackPointer = (unsigned long)argument;*/ /* Arg 0 */
+	*stackPointer = (unsigned long)argument; /* Arg 0 */
+	stackPointer--;
 	*stackPointer = (unsigned long)lwp_exit;
 	stackPointer--;
 	*stackPointer = (unsigned long)function; /* Return Address */
