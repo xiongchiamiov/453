@@ -38,6 +38,8 @@ static void foo(void * bar) {
 static void foo2(void * bar) {
     GetSP(sp);
     GetBP(bp);
+    /* This line should not be necessary. */
+    /*bp[1] = (unsigned long)lwp_exit;*/
     printf("Hallo thar!\n");
 }
 

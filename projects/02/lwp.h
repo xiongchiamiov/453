@@ -74,6 +74,7 @@ extern void lwp_set_scheduler(schedfun sched);
 #define GetBP(sp)  __asm__("movl  %%ebp,%0": "=r" (sp) : )
 
 #define SetSP(sp)  __asm__("movl  %0,%%esp":           : "r" (sp)  )
+#define SetBP(sp)  __asm__("movl  %0,%%ebp":           : "r" (sp)  )
 
 #define RESTORE_STATE() \
   __asm__("popl  %%ebp":: );\

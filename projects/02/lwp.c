@@ -50,11 +50,14 @@ int new_lwp(lwpfun function, void * argument, size_t stacksize) {
 	 *                         ^ memory available to the process
 	 */
 	stackPointer = lwp_ptable[lwp_running].stack + stackSizeInBytes;
-	/*basePointer = stackPointer;*/
-	*stackPointer = (unsigned long)argument; /* Arg 0 */
+	basePointer = stackPointer;
+	/**stackPointer = (unsigned long)argument;*/ /* Arg 0 */
+	*stackPointer = (unsigned long)lwp_exit;
 	stackPointer--;
 	*stackPointer = (unsigned long)function; /* Return Address */
 	stackPointer--;
+	/**stackPointer = (unsigned long)basePointer;*/
+	*stackPointer = 0xDEADBEEF;
 	basePointer = stackPointer;
 	/* Space for the 7 registers SAVE_STATE saves. */
 	stackPointer -= 7;
