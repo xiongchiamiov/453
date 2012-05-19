@@ -29,6 +29,7 @@ PUBLIC int main(void)
 	if (r != 0)
 		panic("driver_receive failed with: %d", r);
 
+	printf("8ball driver received message!\n");
 	/* Execute the requested device driver function. */
 	switch (eightBallMessage.m_type) {
 	    case DEV_READ_S:	 do_read(&eightBallMessage);	  break;
@@ -49,6 +50,8 @@ PUBLIC int main(void)
 
 PRIVATE void init()
 {
+	printf("Shaking the Magic 8 Ball(TM)...");
+	printf("ready.\n");
 }
 
 PRIVATE void do_read(message* message)
