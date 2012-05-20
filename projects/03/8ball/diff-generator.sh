@@ -1,8 +1,10 @@
 #!/bin/sh
 
-# This uses a re-aliased version of diff that compares the
-# given filename to its .orig counterpart.
-diff /usr/src/drivers/Makefile > diff/drivers_Makefile.diff
-diff /etc/system.conf > diff/system.conf.diff
-diff /etc/rc > diff/rc.diff
+diff() {
+	/usr/bin/diff -u $1.orig $1
+}
+
+diff /usr/src/drivers/Makefile > diffs/drivers_Makefile.diff
+diff /etc/system.conf > diffs/system.conf.diff
+diff /etc/rc > diffs/rc.diff
 
