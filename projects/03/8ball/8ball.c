@@ -9,6 +9,7 @@ FORWARD _PROTOTYPE( void do_close, (message *m_ptr)			);
 FORWARD _PROTOTYPE( void do_read, (message *m_ptr)			);
 FORWARD _PROTOTYPE( void do_write, (message *m_ptr)			);
 FORWARD _PROTOTYPE( void do_select, (message *m_ptr)			);
+FORWARD _PROTOTYPE( void reply, (int replyAddress, int process, int status));
 
 /*===========================================================================*
  *				tty_task				     *
@@ -40,9 +41,10 @@ PUBLIC int main(void)
 	    case DEV_SELECT:	 do_select(&eightBallMessage);	  break;
 	    case CANCEL:	 do_cancel(&eightBallMessage);	  break;
 	    default:		
-		printf("Warning, TTY got unexpected request %d from %d\n",
+		printf("Warning, 8ball got unexpected request %d from %d\n",
 			eightBallMessage.m_type, eightBallMessage.m_source);
 	}
+	reply(eightBallMessage.m_source, eightBallMessage.IO_ENDPT, EINVAL);
   }
 
   return 0;
@@ -80,5 +82,18 @@ PRIVATE void do_select(message* message)
 
 PRIVATE void do_cancel(message* message)
 {
+}
+
+PRIVATE void reply(int process, int replyAddress, int status)
+{
+	message response;
+	response.REP_ENDPT = process;
+	response.REP_STATUS = status;
+	
+	printf("8ball: replying to message\n");
+	
+	status = sendnb(replyAddress, &response);
+	if (status != OK)
+		printf("reply: send to %d failed: %d\n", replyAddress, status);
 }
 
