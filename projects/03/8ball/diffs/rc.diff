@@ -1,0 +1,10 @@
+--- /etc/rc.orig	Sat May 19 16:47:12 2012
++++ /etc/rc	Sat May 19 16:47:30 2012
+@@ -182,6 +182,7 @@
+ 	edit vfs
+ 	edit ds
+ 	edit tty
++	edit 8ball
+ 	edit memory
+ 	edit -p log
+ 	edit -c pfs
