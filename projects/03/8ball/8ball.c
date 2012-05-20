@@ -53,6 +53,7 @@ PUBLIC int main(void)
 PRIVATE void init()
 {
 	printf("Shaking the Magic 8 Ball(TM)...");
+	sef_startup();
 	printf("ready.\n");
 }
 
