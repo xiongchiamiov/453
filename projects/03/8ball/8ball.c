@@ -16,38 +16,38 @@ FORWARD _PROTOTYPE( void reply, (int replyAddress, int process, int status));
  *===========================================================================*/
 PUBLIC int main(void)
 {
-/* Main routine of the terminal task. */
+	/* Main routine of the terminal task. */
 
-  message eightBallMessage;		/* buffer for all incoming messages */
-  int ipc_status;
-  int r;
+	message eightBallMessage;		/* buffer for all incoming messages */
+	int ipc_status;
+	int r;
 
-  init();
+	init();
 
-  while (TRUE) {
-	/* Get a request message. */
-	r= driver_receive(ANY, &eightBallMessage, &ipc_status);
-	if (r != 0)
-		panic("driver_receive failed with: %d", r);
+	while (TRUE) {
+		/* Get a request message. */
+		r= driver_receive(ANY, &eightBallMessage, &ipc_status);
+		if (r != 0)
+			panic("driver_receive failed with: %d", r);
 
-	printf("8ball driver received message!\n");
-	/* Execute the requested device driver function. */
-	switch (eightBallMessage.m_type) {
-	    case DEV_READ_S:	 do_read(&eightBallMessage);	  break;
-	    case DEV_WRITE_S:	 do_write(&eightBallMessage);	  break;
-	    case DEV_IOCTL_S:	 do_ioctl(&eightBallMessage);	  break;
-	    case DEV_OPEN:	 do_open(&eightBallMessage);	  break;
-	    case DEV_CLOSE:	 do_close(&eightBallMessage);	  break;
-	    case DEV_SELECT:	 do_select(&eightBallMessage);	  break;
-	    case CANCEL:	 do_cancel(&eightBallMessage);	  break;
-	    default:		
-		printf("Warning, 8ball got unexpected request %d from %d\n",
-			eightBallMessage.m_type, eightBallMessage.m_source);
+		printf("8ball driver received message!\n");
+		/* Execute the requested device driver function. */
+		switch (eightBallMessage.m_type) {
+		    case DEV_READ_S:	 do_read(&eightBallMessage);	  break;
+		    case DEV_WRITE_S:	 do_write(&eightBallMessage);	  break;
+		    case DEV_IOCTL_S:	 do_ioctl(&eightBallMessage);	  break;
+		    case DEV_OPEN:	 do_open(&eightBallMessage);	  break;
+		    case DEV_CLOSE:	 do_close(&eightBallMessage);	  break;
+		    case DEV_SELECT:	 do_select(&eightBallMessage);	  break;
+		    case CANCEL:	 do_cancel(&eightBallMessage);	  break;
+		    default:
+			printf("Warning, 8ball got unexpected request %d from %d\n",
+				eightBallMessage.m_type, eightBallMessage.m_source);
+		}
+		reply(eightBallMessage.m_source, eightBallMessage.IO_ENDPT, EINVAL);
 	}
-	reply(eightBallMessage.m_source, eightBallMessage.IO_ENDPT, EINVAL);
-  }
 
-  return 0;
+	return 0;
 }
 
 PRIVATE void init()
