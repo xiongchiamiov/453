@@ -46,7 +46,7 @@ PUBLIC int main(void)
 			/*case DEV_STATUS:    break;*/
 			/*case DEV_REOPEN:    break;*/
 			case DEV_READ_S:    do_read(&eightBallMessage);    break;
-			/*case DEV_WRITE_S:   do_write(&eightBallMessage);   break;*/
+			case DEV_WRITE_S:   do_write(&eightBallMessage);   break;
 			/*case DEV_SCATTER_S: break;*/
 			/*case DEV_GATHER_S:  break;*/
 			/*case DEV_IOCTL_S:   do_ioctl(&eightBallMessage);   break;*/
@@ -66,7 +66,7 @@ PRIVATE void init()
 {
 	printf("Shaking the Magic 8 Ball(TM)...");
 	sef_startup();
-	eightBall_queuedResponses = 13;
+	eightBall_queuedResponses = 0;
 	printf("ready.\n");
 }
 
@@ -101,11 +101,6 @@ PRIVATE void do_close(message* message)
 PRIVATE void do_read(message* message)
 {
 	int r;
-	/* The source process id is always 1, the bytes to copy are always 2, and
-	 * the memory address is 4 for no reason I can ascertain...
-	 * This buggers up everything.                                         */
-	/* Ok, playing around with the tty driver seems to indicate that the pid
-	 * should indeed be 1 (init).  This seems strange to me, but whatever. */
 	int destinationProcess = message->IO_ENDPT;
 	vir_bytes destinationAddress = (vir_bytes)(message->ADDRESS);
 	phys_bytes bytesToCopy;
@@ -152,13 +147,25 @@ PRIVATE void do_read(message* message)
 	reply(message->m_source, message->IO_ENDPT, r);
 }
 
+PRIVATE void do_write(message* message)
+{
+	int r;
+	
+	printf("do_write called from process %d\n", message->IO_ENDPT);
+	
+	if (message->COUNT <= 0) {
+		r = EINVAL;
+	} else {
+		/* TODO: Increase per newline, not per write. */
+		eightBall_queuedResponses++;
+	}
+	
+	reply(message->m_source, message->IO_ENDPT, r);
+}
+
 /*********************************************************************************
                                     UNUSED
 *********************************************************************************/
-
-PRIVATE void do_write(message* message)
-{
-}
 
 PRIVATE void do_ioctl(message* message)
 {
