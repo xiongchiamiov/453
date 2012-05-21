@@ -1,5 +1,5 @@
 --- /etc/rc.orig	Sat May 19 16:47:12 2012
-+++ /etc/rc	Sat May 19 16:47:30 2012
++++ /etc/rc	Sun May 20 22:01:47 2012
 @@ -182,6 +182,7 @@
  	edit vfs
  	edit ds

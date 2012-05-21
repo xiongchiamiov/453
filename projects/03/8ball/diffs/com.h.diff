@@ -1,0 +1,12 @@
+--- /usr/src/include/minix/com.h.orig	Sun May 20 22:28:39 2012
++++ /usr/src/include/minix/com.h	Sun May 20 22:46:57 2012
+@@ -74,7 +74,8 @@
+ #define VM_PROC_NR   ((endpoint_t) 8)   /* memory server */
+ #define PFS_PROC_NR  ((endpoint_t) 9)  /* pipe filesystem */
+ #define SCHED_PROC_NR ((endpoint_t) 10)	/* scheduler */
+-#define LAST_SPECIAL_PROC_NR	11	/* An untyped version for
++#define EIGHTBALL_PROC_NR  ((endpoint_t) 19)	/* terminal (TTY) driver */
++#define LAST_SPECIAL_PROC_NR	12	/* An untyped version for
+                                            computation in macros.*/
+ #define INIT_PROC_NR ((endpoint_t) LAST_SPECIAL_PROC_NR)  /* init
+                                                         -- goes multiuser */

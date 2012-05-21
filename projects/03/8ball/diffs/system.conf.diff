@@ -1,5 +1,5 @@
---- /etc/system.conf.orig	Sat May 19 16:20:52 2012
-+++ /etc/system.conf	Sun May 20 11:50:01 2012
+--- /etc/system.conf.orig	Sun May 20 12:24:27 2012
++++ /etc/system.conf	Sun May 20 14:53:08 2012
 @@ -2,6 +2,14 @@
  # Boot system services in the boot image
  #

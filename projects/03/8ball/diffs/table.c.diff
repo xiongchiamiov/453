@@ -1,0 +1,10 @@
+--- /usr/src/kernel/table.c.orig	Sun May 20 22:24:22 2012
++++ /usr/src/kernel/table.c	Sun May 20 22:46:31 2012
+@@ -84,6 +84,7 @@
+ {MEM_PROC_NR,  BVM_F, 0,     "memory"},
+ {LOG_PROC_NR,  BVM_F, 0,     "log"   },
+ {TTY_PROC_NR,  BVM_F, 0,     "tty"   },
++{EIGHTBALL_PROC_NR,BVM_F, 0,     "8ball" },
+ {MFS_PROC_NR,  BVM_F, 0,     "mfs"   },
+ {VM_PROC_NR,       0, 0,     "vm"    },
+ {PFS_PROC_NR,  BVM_F, 0,     "pfs"   },
