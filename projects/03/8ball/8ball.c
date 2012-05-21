@@ -11,6 +11,8 @@ FORWARD _PROTOTYPE( void do_write, (message *m_ptr)			);
 FORWARD _PROTOTYPE( void do_select, (message *m_ptr)			);
 FORWARD _PROTOTYPE( void reply, (int replyAddress, int process, int status));
 
+int eightBall_queuedResponses;
+
 /*===========================================================================*
  *				tty_task				     *
  *===========================================================================*/
@@ -64,6 +66,7 @@ PRIVATE void init()
 {
 	printf("Shaking the Magic 8 Ball(TM)...");
 	sef_startup();
+	eightBall_queuedResponses = 13;
 	printf("ready.\n");
 }
 
@@ -111,10 +114,19 @@ PRIVATE void do_read(message* message)
 	
 	printf("do_read called from process %d\n", message->IO_ENDPT);
 	
+	/*if (eightBall_queuedResponses == 0) {
+		printf("No queued 8ball responses!\n");
+		r = EIO;
+	} else if (message->COUNT <= 0) { */
 	if (message->COUNT <= 0) {
 		r = EINVAL;
 	} else {
-		strcpy(response, "Hello from the 8ball!");
+		if (eightBall_queuedResponses == 0) {
+			strcpy(response, "\0");
+		} else {
+			strcpy(response, "Hello from the 8ball!");
+			eightBall_queuedResponses--;
+		}
 		bytesToCopy = (message->COUNT > responseSize)
 		              ? responseSize
 		              : message->COUNT;
@@ -134,6 +146,7 @@ PRIVATE void do_read(message* message)
 			D
 		);
 		r = bytesToCopy;
+		printf("%d responses left\n", eightBall_queuedResponses);
 	}
 	
 	reply(message->m_source, message->IO_ENDPT, r);
