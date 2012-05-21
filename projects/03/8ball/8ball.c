@@ -50,8 +50,9 @@ PUBLIC int main(void)
 			/*case DEV_IOCTL_S:   do_ioctl(&eightBallMessage);   break;*/
 			/*case DEV_MMAP_S:    break;*/
 			default:
-				printf("Warning, 8ball got unexpected request %x from %d\n",
-				       eightBallMessage.m_type, eightBallMessage.m_source);
+				printf("Warning, 8ball got unexpected request %d from %d\n",
+				       eightBallMessage.m_type-DEV_RQ_BASE,
+				       eightBallMessage.m_source);
 				reply(eightBallMessage.m_source, eightBallMessage.IO_ENDPT, EINVAL);
 		}
 	}
@@ -84,18 +85,58 @@ PRIVATE void reply(endpoint_t replyAddress, int process, int status)
 
 PRIVATE void do_open(message* message)
 {
-	printf("do_open called\n");
+	printf("do_open called from process %d\n", message->IO_ENDPT);
 	reply(message->m_source, message->IO_ENDPT, OK);
 }
 
 PRIVATE void do_close(message* message)
 {
-	printf("do_close called\n");
+	printf("do_close called from process %d\n", message->IO_ENDPT);
 	reply(message->m_source, message->IO_ENDPT, DEV_CLOSE_REPL);
 }
 
 PRIVATE void do_read(message* message)
 {
+	int r;
+	/* The source process id is always 1, the bytes to copy are always 2, and
+	 * the memory address is 4 for no reason I can ascertain...
+	 * This buggers up everything.                                         */
+	/* Ok, playing around with the tty driver seems to indicate that the pid
+	 * should indeed be 1 (init).  This seems strange to me, but whatever. */
+	int destinationProcess = message->IO_ENDPT;
+	vir_bytes destinationAddress = (vir_bytes)(message->ADDRESS);
+	phys_bytes bytesToCopy;
+	char* response = (char*)malloc(1024);
+	size_t responseSize = strlen(response);
+	
+	printf("do_read called from process %d\n", message->IO_ENDPT);
+	
+	if (message->COUNT <= 0) {
+		r = EINVAL;
+	} else {
+		strcpy(response, "Hello from the 8ball!");
+		bytesToCopy = (message->COUNT > responseSize)
+		              ? responseSize
+		              : message->COUNT;
+		printf("Copying the first %d bytes of %s to %d in %d...\n",
+		       bytesToCopy, (vir_bytes)response, destinationAddress,
+		       destinationProcess);
+		/* minix/syslib.h */
+		/* The lab instructions say to use sys_datacopy, but I couldn't get
+		 * that to do anything useful.  So, we use sys_safecopyto, which is
+		 * what tty.c uses.                                               */
+		sys_safecopyto(
+			destinationProcess,
+			destinationAddress,
+			0,
+			(vir_bytes)response,
+			bytesToCopy,
+			D
+		);
+		r = bytesToCopy;
+	}
+	
+	reply(message->m_source, message->IO_ENDPT, r);
 }
 
 /*********************************************************************************
