@@ -25,6 +25,7 @@ PUBLIC int main(void)
 	init();
 
 	while (TRUE) {
+		printf("Waiting for a message...\n");
 		/* Get a request message. */
 		r= driver_receive(ANY, &eightBallMessage, &ipc_status);
 		if (r != 0)
@@ -36,7 +37,7 @@ PUBLIC int main(void)
 		switch (eightBallMessage.m_type) {
 			/*case CANCEL:        do_cancel(&eightBallMessage);  break;*/
 			case DEV_OPEN:      do_open(&eightBallMessage);    break;
-			/*case DEV_CLOSE:     do_close(&eightBallMessage);   break;*/
+			case DEV_CLOSE:     do_close(&eightBallMessage);   break;
 			/*case TTY_SETPGRP:   break;*/
 			/*case TTY_EXIT:      break;*/
 			/*case DEV_SELECT:    do_select(&eightBallMessage);  break;*/
@@ -81,14 +82,20 @@ PRIVATE void reply(endpoint_t replyAddress, int process, int status)
 	}
 }
 
-PRIVATE void do_read(message* message)
-{
-}
-
 PRIVATE void do_open(message* message)
 {
 	printf("do_open called\n");
-	reply(message->m_source, message->IO_ENDPT, 1);
+	reply(message->m_source, message->IO_ENDPT, OK);
+}
+
+PRIVATE void do_close(message* message)
+{
+	printf("do_close called\n");
+	reply(message->m_source, message->IO_ENDPT, DEV_CLOSE_REPL);
+}
+
+PRIVATE void do_read(message* message)
+{
 }
 
 /*********************************************************************************
@@ -100,10 +107,6 @@ PRIVATE void do_write(message* message)
 }
 
 PRIVATE void do_ioctl(message* message)
-{
-}
-
-PRIVATE void do_close(message* message)
 {
 }
 
