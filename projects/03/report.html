@@ -1,0 +1,421 @@
+<p>James Pearson (jmpearso)
+CPE 453&#8211;09
+Assignment 3</p>
+
+<h1 id="overallarchitecture">Overall Architecture</h1>
+
+<h2 id="howwillthedriverbeinitialized">How will the driver be initialized?</h2>
+
+<p>The <code>8ball</code> executable gets run by the reincarnation server (RS). RS is told
+to do this either by a manual call to <code>service</code> (<code>service up /usr/sbin/8ball
+-dev /dev/8ball</code>) or the <code>boot_image_priv_table</code> data structure.</p>
+
+<p><code>8ball</code> itself runs an initialization routine before entering the
+message-receiving infinite loop.</p>
+
+<h2 id="howwillthedriverbestarted">How will the driver be started?</h2>
+
+<p>&#8220;Starting&#8221; and &#8220;initializing&#8221; are synonyms, as far as I know, so the answer to
+this is the same as the previous section.</p>
+
+<h2 id="howwillitrandomizeanswers">How will it randomize answers?</h2>
+
+<p>Since this seemed to be a less important part of the assignment, I left it
+until later (and never got to it).</p>
+
+<p><code>stdlib.h</code> and <code>time.h</code> provide standard randomization functions; there is also
+<code>/dev/random</code>, which could be utilized with a small amount of work (read a
+character and use it modulo 20 as the index into the answer array).</p>
+
+<h2 id="howwillitenforcetherequirementthatitnotanswerwithoutbeingaskedaquestion">How will it enforce the requirement that it not answer without being asked a question?</h2>
+
+<p>There exists a global state variable that records the number of queued answers;
+that is, it starts at 0, increments every time a question comes in, and
+decrements every time we output an answer.</p>
+
+<p>Initially, a read request when there were no queued answers would receive the
+EIO status, indicating that it should sleep while input was buffered. However,
+this didn&#8217;t appear to be the behavior of the model, so instead <code>8ball</code> returns
+a NUL character (<code>\0</code>) to indicate that there is no more to be read.</p>
+
+<h2 id="howwillitbehavetonotbringtherestoftheoperatingsystemtoascreechinghalt">How will it behave to not bring the rest of the operating system to a screeching halt?</h2>
+
+<p><code>8ball</code> uses the non-blocking <code>nbsend</code> variant of the <code>send</code> system call when
+responding to messages and attempts to avoid blocking calls elsewhere.</p>
+
+<h1 id="detaileddescription">Detailed Description</h1>
+
+<h2 id="developmentenvironment">Development Environment</h2>
+
+<p>Minix 10.0.2.15 3.1.8-pearson (stock kernel with my modifications for this
+assignment) running on VirtualBox 4.0.6.</p>
+
+<h2 id="modifiedfiles">Modified Files</h2>
+
+<h3 id="includeminixcom.h">include/minix/com.h</h3>
+
+<pre><code>--- /usr/src/include/minix/com.h.orig   Sun May 20 22:28:39 2012
++++ /usr/src/include/minix/com.h    Sun May 20 22:46:57 2012
+@@ -74,7 +74,8 @@
+ #define VM_PROC_NR   ((endpoint_t) 8)   /* memory server */
+ #define PFS_PROC_NR  ((endpoint_t) 9)  /* pipe filesystem */
+ #define SCHED_PROC_NR ((endpoint_t) 10)    /* scheduler */
+-#define LAST_SPECIAL_PROC_NR   11  /* An untyped version for
++#define EIGHTBALL_PROC_NR  ((endpoint_t) 19)   /* terminal (TTY) driver */
++#define LAST_SPECIAL_PROC_NR   12  /* An untyped version for
+                                            computation in macros.*/
+ #define INIT_PROC_NR ((endpoint_t) LAST_SPECIAL_PROC_NR)  /* init
+                                                         -- goes multiuser */
+</code></pre>
+
+<p>To include <code>8ball</code> in the list of drivers started at boot by RS, <code>TODO/table.c</code>
+needed to know about the major device number associated with <code>/dev/8ball</code>.
+Also, <code>TODO/table.c</code> performs a compile-time sanity check to ensure that a few
+tables are the sizes it expects, and thus we needed to bump up the number of
+&#8220;special processes&#8221; by one.</p>
+
+<h3 id="driversmakefile">drivers/Makefile</h3>
+
+<pre><code>--- /usr/src/drivers/Makefile.orig  Sat May 19 16:23:01 2012
++++ /usr/src/drivers/Makefile   Sat May 19 16:23:16 2012
+@@ -8,7 +8,7 @@
+ SUBDIR = acpi
+ .endif
+
+-SUBDIR+= ahci amddev atl2 at_wini audio bios_wini dec21140A dp8390 dpeth \
++SUBDIR+= 8ball ahci amddev atl2 at_wini audio bios_wini dec21140A dp8390 dpeth \
+    e1000 filter floppy fxp hello lance log orinoco pci printer \
+    random readclock rtl8139 rtl8169 sb16 ti1225 tty \
+    .WAIT ramdisk .WAIT memory
+</code></pre>
+
+<p>We want to compile <code>8ball</code> when doing an all-drivers build.</p>
+
+<h3 id="etcrc">/etc/rc</h3>
+
+<pre><code>--- /etc/rc.orig    Sat May 19 16:47:12 2012
++++ /etc/rc Sun May 20 22:01:47 2012
+@@ -182,6 +182,7 @@
+    edit vfs
+    edit ds
+    edit tty
++   edit 8ball
+    edit memory
+    edit -p log
+    edit -c pfs
+</code></pre>
+
+<p><code>/etc/rc</code> is run at startup; under normal circumstances, it performs minor
+edits to the services known to RS using the <code>service</code> command. Since we&#8217;re
+planning on having <code>8ball</code> start on boot, it should be included in this list.</p>
+
+<h3 id="serversrstable.c">servers/rs/table.c</h3>
+
+<pre><code>--- /usr/src/servers/rs/table.c.orig    Sun May 20 23:41:23 2012
++++ /usr/src/servers/rs/table.c Sun May 20 23:43:07 2012
+@@ -21,6 +21,7 @@
+ {VFS_PROC_NR,  &quot;vfs&quot;,    SRV_F  },
+ {DS_PROC_NR,   &quot;ds&quot;,     SRV_F  },
+ {TTY_PROC_NR,  &quot;tty&quot;,    SRV_F  },
++{EIGHTBALL_PROC_NR,&quot;8ball&quot;,SRV_F},
+ {MEM_PROC_NR,  &quot;memory&quot;, SRV_F  },
+ {LOG_PROC_NR,  &quot;log&quot;,    SRV_F  },
+ {MFS_PROC_NR,&quot;fs_imgrd&quot;, SRV_F  },
+</code></pre>
+
+<p>This is the list of service RS knows about (and starts) at boot.</p>
+
+<h3 id="etcsystem.conf">/etc/system.conf</h3>
+
+<pre><code>--- /etc/system.conf.orig   Sun May 20 12:24:27 2012
++++ /etc/system.conf    Sun May 20 14:53:08 2012
+@@ -2,6 +2,14 @@
+ # Boot system services in the boot image
+ #
+
++service 8ball
++{
++   uid     0;
++   ipc ALL;        # ALL ipc targets allowed
++   system  ALL;        # ALL kernel calls allowed
++   io  ALL;        # ALL I/O ranges allowed
++};
++
+ service rs
+ {
+    uid     0;
+</code></pre>
+
+<p><code>service</code> gets unhappy dealing with <code>8ball</code> unless it knows a few details about
+it. This tells RS to run <code>8ball</code> as the root user and to give it a few
+necessary (and a few unnecessary) permissions.</p>
+
+<h3 id="kerneltable.c">kernel/table.c</h3>
+
+<pre><code>--- /usr/src/kernel/table.c.orig    Sun May 20 22:24:22 2012
++++ /usr/src/kernel/table.c Sun May 20 22:46:31 2012
+@@ -84,6 +84,7 @@
+ {MEM_PROC_NR,  BVM_F, 0,     &quot;memory&quot;},
+ {LOG_PROC_NR,  BVM_F, 0,     &quot;log&quot;   },
+ {TTY_PROC_NR,  BVM_F, 0,     &quot;tty&quot;   },
++{EIGHTBALL_PROC_NR,BVM_F, 0,     &quot;8ball&quot; },
+ {MFS_PROC_NR,  BVM_F, 0,     &quot;mfs&quot;   },
+ {VM_PROC_NR,       0, 0,     &quot;vm&quot;    },
+ {PFS_PROC_NR,  BVM_F, 0,     &quot;pfs&quot;   },
+</code></pre>
+
+<p>Another table listing at-boot drivers; if the one in <code>servers/rs/table.c</code> is
+modified and this isn&#8217;t, the kernel gets rather unhappy at boot and <code>panic</code>s
+about the inconsistency.</p>
+
+<h3 id="includeminixtypes.h">include/minix/types.h</h3>
+
+<pre><code>--- /usr/src/include/minix/types.h.orig Sun May 20 22:49:36 2012
++++ /usr/src/include/minix/types.h  Sun May 20 22:49:38 2012
+@@ -36,7 +36,7 @@
+ typedef u32_t block_t;    /* block number */
+ typedef u32_t bit_t;      /* bit number in a bit map */
+ typedef u16_t zone1_t;    /* zone number for V1 file systems */
+-typedef u16_t bitchunk_t; /* collection of bits in a bitmap */
++typedef u32_t bitchunk_t; /* collection of bits in a bitmap */
+
+ /* ANSI C makes writing down the promotion of unsigned types very messy.  When
+  * sizeof(short) == sizeof(int), there is no promotion, so the type stays
+</code></pre>
+
+<p>Adding another element to <code>boot_image_priv_table</code> increases the number of bits
+needed for non-overlapping bitmasking.</p>
+
+<h2 id="magicballrdriver">Magic * Ball(R) Driver</h2>
+
+<pre><code>#include &lt;minix/drivers.h&gt;
+#include &lt;minix/driver.h&gt;
+
+FORWARD _PROTOTYPE( void init, (void)                   );
+FORWARD _PROTOTYPE( void do_cancel, (message *m_ptr)            );
+FORWARD _PROTOTYPE( void do_ioctl, (message *m_ptr)         );
+FORWARD _PROTOTYPE( void do_open, (message *m_ptr)          );
+FORWARD _PROTOTYPE( void do_close, (message *m_ptr)         );
+FORWARD _PROTOTYPE( void do_read, (message *m_ptr)          );
+FORWARD _PROTOTYPE( void do_write, (message *m_ptr)         );
+FORWARD _PROTOTYPE( void do_select, (message *m_ptr)            );
+FORWARD _PROTOTYPE( void reply, (int replyAddress, int process, int status));
+
+int eightBall_queuedResponses;
+
+/*===========================================================================*
+ *              tty_task                     *
+ *===========================================================================*/
+PUBLIC int main(void)
+{
+    /* Main routine of the terminal task. */
+
+    message eightBallMessage;       /* buffer for all incoming messages */
+    int ipc_status;
+    int r;
+
+    init();
+
+    while (TRUE) {
+        printf(&quot;Waiting for a message...\n&quot;);
+        /* Get a request message. */
+        r= driver_receive(ANY, &amp;eightBallMessage, &amp;ipc_status);
+        if (r != 0)
+            panic(&quot;driver_receive failed with: %d&quot;, r);
+
+        printf(&quot;8ball driver received message!\n&quot;);
+        /* Execute the requested device driver function. */
+        /* These constants are defined in minix/com.h . */
+        switch (eightBallMessage.m_type) {
+            /*case CANCEL:        do_cancel(&amp;eightBallMessage);  break;*/
+            case DEV_OPEN:      do_open(&amp;eightBallMessage);    break;
+            case DEV_CLOSE:     do_close(&amp;eightBallMessage);   break;
+            /*case TTY_SETPGRP:   break;*/
+            /*case TTY_EXIT:      break;*/
+            /*case DEV_SELECT:    do_select(&amp;eightBallMessage);  break;*/
+            /*case DEV_STATUS:    break;*/
+            /*case DEV_REOPEN:    break;*/
+            case DEV_READ_S:    do_read(&amp;eightBallMessage);    break;
+            case DEV_WRITE_S:   do_write(&amp;eightBallMessage);   break;
+            /*case DEV_SCATTER_S: break;*/
+            /*case DEV_GATHER_S:  break;*/
+            /*case DEV_IOCTL_S:   do_ioctl(&amp;eightBallMessage);   break;*/
+            /*case DEV_MMAP_S:    break;*/
+            default:
+                printf(&quot;Warning, 8ball got unexpected request %d from %d\n&quot;,
+                       eightBallMessage.m_type-DEV_RQ_BASE,
+                       eightBallMessage.m_source);
+                reply(eightBallMessage.m_source, eightBallMessage.IO_ENDPT, EINVAL);
+        }
+    }
+
+    return 0;
+}
+
+PRIVATE void init()
+{
+    printf(&quot;Shaking the Magic 8 Ball(TM)...&quot;);
+    sef_startup();
+    eightBall_queuedResponses = 0;
+    printf(&quot;ready.\n&quot;);
+}
+
+PRIVATE void reply(endpoint_t replyAddress, int process, int status)
+{
+    message response;
+    response.m_type = TASK_REPLY;
+    response.REP_ENDPT = process;
+    response.REP_STATUS = status;
+
+    printf(&quot;8ball: replying to message\n&quot;);
+
+    status = sendnb(replyAddress, &amp;response);
+    if (status != OK) {
+        printf(&quot;reply: send to %d failed: %s (%d)\n&quot;,
+               replyAddress, strerror(status), status);
+    }
+}
+
+PRIVATE void do_open(message* message)
+{
+    printf(&quot;do_open called from process %d\n&quot;, message-&gt;IO_ENDPT);
+    reply(message-&gt;m_source, message-&gt;IO_ENDPT, OK);
+}
+
+PRIVATE void do_close(message* message)
+{
+    printf(&quot;do_close called from process %d\n&quot;, message-&gt;IO_ENDPT);
+    reply(message-&gt;m_source, message-&gt;IO_ENDPT, DEV_CLOSE_REPL);
+}
+
+PRIVATE void do_read(message* message)
+{
+    int r;
+    int destinationProcess = message-&gt;IO_ENDPT;
+    vir_bytes destinationAddress = (vir_bytes)(message-&gt;ADDRESS);
+    phys_bytes bytesToCopy;
+    char* response = (char*)malloc(1024);
+    size_t responseSize = strlen(response);
+
+    printf(&quot;do_read called from process %d\n&quot;, message-&gt;IO_ENDPT);
+
+    /*if (eightBall_queuedResponses == 0) {
+        printf(&quot;No queued 8ball responses!\n&quot;);
+        r = EIO;
+    } else if (message-&gt;COUNT &lt;= 0) { */
+    if (message-&gt;COUNT &lt;= 0) {
+        r = EINVAL;
+    } else {
+        if (eightBall_queuedResponses == 0) {
+            strcpy(response, &quot;\0&quot;);
+        } else {
+            strcpy(response, &quot;Hello from the 8ball!&quot;);
+            eightBall_queuedResponses--;
+        }
+        bytesToCopy = (message-&gt;COUNT &gt; responseSize)
+                      ? responseSize
+                      : message-&gt;COUNT;
+        printf(&quot;Copying the first %d bytes of %s to %d in %d...\n&quot;,
+               bytesToCopy, (vir_bytes)response, destinationAddress,
+               destinationProcess);
+        /* minix/syslib.h */
+        /* The lab instructions say to use sys_datacopy, but I couldn't get
+         * that to do anything useful.  So, we use sys_safecopyto, which is
+         * what tty.c uses.                                               */
+        sys_safecopyto(
+            destinationProcess,
+            destinationAddress,
+            0,
+            (vir_bytes)response,
+            bytesToCopy,
+            D
+        );
+        r = bytesToCopy;
+        printf(&quot;%d responses left\n&quot;, eightBall_queuedResponses);
+    }
+
+    reply(message-&gt;m_source, message-&gt;IO_ENDPT, r);
+}
+
+PRIVATE void do_write(message* message)
+{
+    int r;
+
+    printf(&quot;do_write called from process %d\n&quot;, message-&gt;IO_ENDPT);
+
+    if (message-&gt;COUNT &lt;= 0) {
+        r = EINVAL;
+    } else {
+        /* TODO: Increase per newline, not per write. */
+        eightBall_queuedResponses++;
+    }
+
+    reply(message-&gt;m_source, message-&gt;IO_ENDPT, r);
+}
+
+/*********************************************************************************
+                                    UNUSED
+*********************************************************************************/
+
+PRIVATE void do_ioctl(message* message)
+{
+}
+
+PRIVATE void do_select(message* message)
+{
+}
+
+PRIVATE void do_cancel(message* message)
+{
+}
+</code></pre>
+
+<h2 id="behavior">Behavior</h2>
+
+<p>With all of the modifications described above, the kernel refuses to boot,
+providing the helpfully-reverse-truncated message &#8220;vilege structure: &#8211;22&#8221;.</p>
+
+<p>Booting off a working kernel and manually starting <code>8ball</code> using <code>service</code>,
+there are some basic read/write capabilities:</p>
+
+<pre><code># alias service8
+alias service8='service up /usr/sbin/8ball -dev /dev/8ball '
+# service8
+# ./a.out
+        Testing read from /dev/8ball...
+        Starting read on file descriptor 11272
+
+# echo 'one' &gt; /dev/8ball
+# ./a.out
+        Testing read from /dev/8ball...
+        Starting read on file descriptor 11272
+        He
+# ./a.out
+        Testing read from /dev/8ball...
+        Starting read on file descriptor 11272
+
+# echo 'one' &gt; /dev/8ball
+# echo 'two' &gt; /dev/8ball
+# ./a.out
+        Testing read from /dev/8ball...
+        Starting read on file descriptor 11272
+        HeHe
+# ./a.out
+        Testing read from /dev/8ball...
+        Starting read on file descriptor 11272
+
+# 
+</code></pre>
+
+<h2 id="otherproblemsencountered">Other Problems Encountered</h2>
+
+<p>Trying to compile gives a <code>(warning) main is a function; cannot be formal</code>
+unless <code>&lt;minix/driver.h&gt;</code> is included.</p>
+
+<p>Trying to use <code>service up</code> told me I needed to modify <code>/etc/system.conf</code>.
+Then, it kept hanging until I added a call to <code>sef_startup()</code>.</p>
+
+<p>Attempting to attach the driver to <code>/dev/8ball</code> kept failing because there
+already was a driver using the major id 18; I had to remove <code>/dev/8ball</code> and
+recreate it (using <code>mknod</code>) with major id 19. <code>dev2name</code> reports that
+<code>/dev/uds</code> is what&#8217;s using 18&#8211;0.</p>
