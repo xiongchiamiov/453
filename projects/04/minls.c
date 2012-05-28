@@ -73,7 +73,7 @@ void show_help_and_exit() {
 }
 
 void build_partition(partition* partition, FILE* diskImage) {
-	fseek(diskImage, SUPER_BLOCK_OFFSET, SEEK_SET);
+	fseek(diskImage, PARTITION_TABLE_OFFSET, SEEK_SET);
 	fread(partition, sizeof(partition), 1, diskImage);
 	print_partition(partition);
 }

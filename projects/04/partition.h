@@ -3,6 +3,8 @@
 #ifndef _PARTITION
 #define _PARTITION
 
+#define PARTITION_TABLE_OFFSET 0x1BE
+
 #include "types.h"
 
 typedef struct partition_t {
