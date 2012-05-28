@@ -149,7 +149,7 @@ void print_superblock(superblock* superBlock) {
 
 void print_partition(partition* partition) {
 	printf("partition at %p:\n", partition);
-	printf("\tbootind:    %16d", partition->bootind);
+	printf("\tbootind:    %16x", partition->bootind);
 	printf("  Boot magic number (0x80 if bootable)\n");
 	printf("\tstart_head: %16d", partition->start_head);
 	printf("  \n");
@@ -157,7 +157,7 @@ void print_partition(partition* partition) {
 	printf("  \n");
 	printf("\tstart_cyl:  %16d", partition->start_cyl);
 	printf("  \n");
-	printf("\ttype:       %16d", partition->type);
+	printf("\ttype:       %16x", partition->type);
 	printf("  Type of partition (0x81 is MINIX)\n");
 	printf("\tend_head:   %16d", partition->end_head);
 	printf("  End of partition in CHS\n");
