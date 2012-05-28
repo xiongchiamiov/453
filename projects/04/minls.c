@@ -73,6 +73,20 @@ void show_help_and_exit() {
 }
 
 void build_partition(partition* partition, FILE* diskImage) {
+	uint8_t byte[2];
+	fseek(diskImage, MAGIC_BYTE_ONE_ADDRESS, SEEK_SET);
+	fread(byte, 1, 1, diskImage);
+	printf("First magic byte is %x (%x expected)\n", byte[0], MAGIC_BYTE_ONE);
+	fseek(diskImage, MAGIC_BYTE_TWO_ADDRESS, SEEK_SET);
+	fread(byte+1, 1, 1, diskImage);
+	printf("Second magic byte is %x (%x expected)\n", byte[1], MAGIC_BYTE_TWO);
+	
+	if (byte[0] != MAGIC_BYTE_ONE
+	 || byte[1] != MAGIC_BYTE_TWO) {
+		fprintf(stderr, "Not a valid partition table!\n");
+		exit(EXIT_FAILURE);
+	}
+	
 	fseek(diskImage, PARTITION_TABLE_OFFSET, SEEK_SET);
 	fread(partition, sizeof(partition), 1, diskImage);
 	print_partition(partition);

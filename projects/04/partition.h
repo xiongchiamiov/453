@@ -4,6 +4,10 @@
 #define _PARTITION
 
 #define PARTITION_TABLE_OFFSET 0x1BE
+#define MAGIC_BYTE_ONE 0x55
+#define MAGIC_BYTE_ONE_ADDRESS 510
+#define MAGIC_BYTE_TWO 0xAA
+#define MAGIC_BYTE_TWO_ADDRESS 511
 
 #include "types.h"
 
