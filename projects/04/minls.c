@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
 	    * imagefile,
 	    * path;
 	FILE* diskImage;
+	partition partition;
 	superblock superBlock;
 	
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
@@ -61,6 +62,7 @@ int main(int argc, char *argv[]) {
 		show_help_and_exit();
 	}
 	
+	build_partition(&partition, diskImage);
 	build_superblock(&superBlock, diskImage);
 }
 
@@ -68,6 +70,12 @@ void show_help_and_exit() {
 	fprintf(stderr,
 	       "Usage: minls [-v] [-p part [-s subpart]] imagefile [path]\n");
 	exit(EXIT_FAILURE);
+}
+
+void build_partition(partition* partition, FILE* diskImage) {
+	fseek(diskImage, SUPER_BLOCK_OFFSET, SEEK_SET);
+	fread(partition, sizeof(partition), 1, diskImage);
+	print_partition(partition);
 }
 
 void build_superblock(superblock* superBlock, FILE* diskImage) {

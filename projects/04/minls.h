@@ -14,6 +14,7 @@ typedef int bool;
 
 void show_help_and_exit();
 void build_superblock(superblock* superBlock, FILE* diskImage);
+void build_partition(partition* partition, FILE* diskImage);
 void print_superblock(superblock* superBlock);
 void print_partition(partition* partition);
 
