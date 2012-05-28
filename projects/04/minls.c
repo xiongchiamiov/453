@@ -76,6 +76,10 @@ void build_superblock(superblock* superBlock, FILE* diskImage) {
 	print_superblock(superBlock);
 }
 
+/******************************************************************************\
+|                           Print Utility Functions                            |
+\******************************************************************************/
+
 /**
  * Wouldn't it be nice if C had facilities for printing out structures?
  */
@@ -133,5 +137,29 @@ void print_superblock(superblock* superBlock) {
 	printf("  inodes below this bit number are in use\n");
 	printf("\ts_zsearch:          %16lu", superBlock->s_zsearch);
 	printf("  all zones below this bit number are in use\n");
+}
+
+void print_partition(partition* partition) {
+	printf("partition at %p:\n", partition);
+	printf("\tbootind:    %16d", partition->bootind);
+	printf("  Boot magic number (0x80 if bootable)\n");
+	printf("\tstart_head: %16d", partition->start_head);
+	printf("  \n");
+	printf("\tstart_sec:  %16d", partition->start_sec);
+	printf("  \n");
+	printf("\tstart_cyl:  %16d", partition->start_cyl);
+	printf("  \n");
+	printf("\ttype:       %16d", partition->type);
+	printf("  Type of partition (0x81 is MINIX)\n");
+	printf("\tend_head:   %16d", partition->end_head);
+	printf("  End of partition in CHS\n");
+	printf("\tend_sec:    %16d", partition->end_sec);
+	printf("  \n");
+	printf("\tend_cyl:    %16d", partition->end_cyl);
+	printf("  \n");
+	printf("\tlFirst:     %16lu", partition->lFirst);
+	printf("  First sector (LBA addressing)\n");
+	printf("\tsize:       %16lu", partition->size);
+	printf("  Size of partition (in sectors)\n");
 }
 

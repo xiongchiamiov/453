@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "super.h"
+#include "partition.h"
 
 /* If we were using C99, we could use stdbool.h.  But we aren't.
  * The lowercased 'true' and 'false' are used because my setup of Vim has them
@@ -14,6 +15,7 @@ typedef int bool;
 void show_help_and_exit();
 void build_superblock(superblock* superBlock, FILE* diskImage);
 void print_superblock(superblock* superBlock);
+void print_partition(partition* partition);
 
 #endif
 
