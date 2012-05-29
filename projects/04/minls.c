@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
 	FILE* diskImage;
 	partition partitionTable[4];
 	superblock superBlock;
+	inode* inodeList;
 	
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
 		switch (c) {
@@ -68,6 +69,7 @@ int main(int argc, char *argv[]) {
 		build_partition(partitionTable, diskImage, verbose);
 	}
 	build_superblock(&superBlock, diskImage, verbose);
+	inodeList = build_inode(&superBlock, diskImage, verbose);
 }
 
 void show_help_and_exit() {
@@ -109,6 +111,30 @@ void build_superblock(superblock* superBlock, FILE* diskImage, bool verbose) {
 	if (verbose) {
 		print_superblock(superBlock);
 	}
+}
+
+inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
+	int inodeOffset,
+	    i;
+	inode* inodeList;
+	
+	inodeList = malloc(sizeof(inode) * superBlock->s_ninodes);
+	inodeOffset = (2 + superBlock->s_imap_blocks + superBlock->s_zmap_blocks)
+	            * superBlock->s_block_size;
+	fseek(diskImage, inodeOffset, SEEK_SET);
+	fread(inodeList, sizeof(inode) * superBlock->s_ninodes,
+	      superBlock->s_ninodes, diskImage);
+	if (verbose) {
+		/*
+		for (i = 0; i < superBlock->s_ninodes; i++) {
+			print_inode(inodeList+i);
+		}
+		*/
+		/* Nevermind, just print the root inode. */
+		print_inode(inodeList);
+	}
+	
+	return inodeList;
 }
 
 /******************************************************************************\
@@ -201,7 +227,7 @@ void print_partition(partition* partition) {
 
 void print_inode(inode* inode) {
 	fprintf(stderr, "inode at %p:\n", inode);
-	fprintf(stderr, "\tmode:               %16u", inode->mode);
+	fprintf(stderr, "\tmode:               %16x", inode->mode);
 	fprintf(stderr, "  File type and rwx bits\n");
 	fprintf(stderr, "\tnumLinks:           %16u", inode->numLinks);
 	fprintf(stderr, "  \n");
