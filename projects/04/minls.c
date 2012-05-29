@@ -137,8 +137,9 @@ void print_superblock(superblock* superBlock) {
 	fprintf(stderr, "  maximum file size on this device\n");
 	fprintf(stderr, "\ts_zones:            %16lu", superBlock->s_zones);
 	fprintf(stderr, "  number of zones (replaces s_nzones in V2)\n");
-	fprintf(stderr, "\ts_magic:            %16d", superBlock->s_magic);
-	fprintf(stderr, "  magic number to recognize super-blocks\n");
+	fprintf(stderr, "\ts_magic:            %16x", superBlock->s_magic);
+	fprintf(stderr, "  magic number to recognize super-blocks (%x expected)\n",
+	        MINIX_MAGIC);
 	/* V3 and higher filesystems only. */
 	fprintf(stderr, "\n");
 	fprintf(stderr, "\ts_pad2:             %16d", superBlock->s_pad2);

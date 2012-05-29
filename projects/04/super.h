@@ -4,6 +4,7 @@
 #define __MFS_SUPER_H__
 
 #define SUPER_BLOCK_OFFSET 1024
+#define MINIX_MAGIC 0x4D5A
 
 /* Super block table.  The root file system and every mounted file system
  * has an entry here.  The entry holds information about the sizes of the bit
