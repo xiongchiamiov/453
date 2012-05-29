@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	    * imagefile,
 	    * path;
 	FILE* diskImage;
-	partition partition;
+	partition partitionTable[4];
 	superblock superBlock;
 	
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 		show_help_and_exit();
 	}
 	
-	build_partition(&partition, diskImage);
+	build_partition(partitionTable, diskImage);
 	build_superblock(&superBlock, diskImage);
 }
 
@@ -72,8 +72,10 @@ void show_help_and_exit() {
 	exit(EXIT_FAILURE);
 }
 
-void build_partition(partition* partition, FILE* diskImage) {
+void build_partition(partition partitionTable[], FILE* diskImage) {
+	int i;
 	uint8_t byte[2];
+	
 	fseek(diskImage, MAGIC_BYTE_ONE_ADDRESS, SEEK_SET);
 	fread(byte, 1, 1, diskImage);
 	printf("First magic byte is %x (%x expected)\n", byte[0], MAGIC_BYTE_ONE);
@@ -88,8 +90,10 @@ void build_partition(partition* partition, FILE* diskImage) {
 	}
 	
 	fseek(diskImage, PARTITION_TABLE_OFFSET, SEEK_SET);
-	fread(partition, sizeof(partition), 1, diskImage);
-	print_partition(partition);
+	fread(partitionTable, sizeof(partition), 4, diskImage);
+	for (i = 0; i < 4; i++) {
+		print_partition(partitionTable+i);
+	}
 }
 
 void build_superblock(superblock* superBlock, FILE* diskImage) {
