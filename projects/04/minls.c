@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
 		show_help_and_exit();
 	}
 	
+	/* (partition) -> sector -> block -> zone */
 	if (part) {
 		build_partition(partitionTable, diskImage, verbose);
 	}
