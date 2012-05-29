@@ -34,7 +34,7 @@ typedef struct super_block {
   zone1_t s_firstdatazone;	/* number of first data zone (small) */
   short s_log_zone_size;	/* log2 of blocks/zone */
   short s_pad;			/* try to avoid compiler-dependent padding */
-  off_t s_max_size;		/* maximum file size on this device */
+  unsigned long s_max_size;	/* maximum file size on this device */
   zone_t s_zones;		/* number of zones (replaces s_nzones in V2) */
   short s_magic;		/* magic number to recognize super-blocks */
 
@@ -53,7 +53,7 @@ typedef struct super_block {
   struct inode *s_isup;	/* inode for root dir of mounted file sys */
   struct inode *s_imount;   /* inode mounted on */
   unsigned s_inodes_per_block;	/* precalculated from magic number */
-  dev_t s_dev;			/* whose super block is this? */
+  unsigned short s_dev;	/* whose super block is this? */
   int s_rd_only;		/* set to 1 iff file sys mounted read only */
   int s_native;			/* set to 1 iff not byte swapped file system */
   int s_version;		/* file system version, zero means bad magic */

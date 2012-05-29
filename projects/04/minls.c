@@ -133,7 +133,7 @@ void print_superblock(superblock* superBlock) {
 	fprintf(stderr, "  log2 of blocks/zone\n");
 	fprintf(stderr, "\ts_pad:              %16d", superBlock->s_pad);
 	fprintf(stderr, "  try to avoid compiler-dependent padding\n");
-	fprintf(stderr, "\ts_max_size:         %16lld", superBlock->s_max_size);
+	fprintf(stderr, "\ts_max_size:         %16lu", superBlock->s_max_size);
 	fprintf(stderr, "  maximum file size on this device\n");
 	fprintf(stderr, "\ts_zones:            %16lu", superBlock->s_zones);
 	fprintf(stderr, "  number of zones (replaces s_nzones in V2)\n");
