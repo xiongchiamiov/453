@@ -119,7 +119,7 @@ void build_superblock(superblock* superBlock, FILE* diskImage, bool verbose) {
  */
 void print_superblock(superblock* superBlock) {
 	fprintf(stderr, "superblock at %p:\n", superBlock);
-	fprintf(stderr, "\ts_ninodes:          %16lu", superBlock->s_ninodes);
+	fprintf(stderr, "\ts_ninodes:          %16u", superBlock->s_ninodes);
 	fprintf(stderr, "  Usable inodes on the minor device\n");
 	fprintf(stderr, "\ts_nzones:           %16d", superBlock->s_nzones);
 	fprintf(stderr, "  Total device size, including bit maps etc\n");
@@ -133,9 +133,9 @@ void print_superblock(superblock* superBlock) {
 	fprintf(stderr, "  log2 of blocks/zone\n");
 	fprintf(stderr, "\ts_pad:              %16d", superBlock->s_pad);
 	fprintf(stderr, "  try to avoid compiler-dependent padding\n");
-	fprintf(stderr, "\ts_max_size:         %16lu", superBlock->s_max_size);
+	fprintf(stderr, "\ts_max_size:         %16u", superBlock->s_max_size);
 	fprintf(stderr, "  maximum file size on this device\n");
-	fprintf(stderr, "\ts_zones:            %16lu", superBlock->s_zones);
+	fprintf(stderr, "\ts_zones:            %16u", superBlock->s_zones);
 	fprintf(stderr, "  number of zones (replaces s_nzones in V2)\n");
 	fprintf(stderr, "\ts_magic:            %16x", superBlock->s_magic);
 	fprintf(stderr, "  magic number to recognize super-blocks (%x expected)\n",
@@ -168,9 +168,9 @@ void print_superblock(superblock* superBlock) {
 	fprintf(stderr, "  # direct zones in an inode\n");
 	fprintf(stderr, "\ts_nindirs:          %16d", superBlock->s_nindirs);
 	fprintf(stderr, "  # indirect zones per indirect block\n");
-	fprintf(stderr, "\ts_isearch:          %16lu", superBlock->s_isearch);
+	fprintf(stderr, "\ts_isearch:          %16u", superBlock->s_isearch);
 	fprintf(stderr, "  inodes below this bit number are in use\n");
-	fprintf(stderr, "\ts_zsearch:          %16lu", superBlock->s_zsearch);
+	fprintf(stderr, "\ts_zsearch:          %16u", superBlock->s_zsearch);
 	fprintf(stderr, "  all zones below this bit number are in use\n");
 }
 
