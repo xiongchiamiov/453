@@ -199,3 +199,43 @@ void print_partition(partition* partition) {
 	fprintf(stderr, "  Size of partition (in sectors)\n");
 }
 
+void print_inode(inode* inode) {
+	fprintf(stderr, "inode at %p:\n", inode);
+	fprintf(stderr, "\tmode:               %16u", inode->mode);
+	fprintf(stderr, "  File type and rwx bits\n");
+	fprintf(stderr, "\tnumLinks:           %16u", inode->numLinks);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tuid:                %16u", inode->uid);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tgid:                %16u", inode->gid);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tfileSize:           %16u", inode->fileSize);
+	fprintf(stderr, "  Number of bytes in the file\n");
+	fprintf(stderr, "\taccessTime:         %16u", inode->accessTime);
+	fprintf(stderr, "  \\\n");
+	fprintf(stderr, "\tmodificationTime:   %16u", inode->modificationTime);
+	fprintf(stderr, "   | All in seconds since the epoch\n");
+	fprintf(stderr, "\tstatusChangeTime:   %16u", inode->statusChangeTime);
+	fprintf(stderr, "  /\n");
+	fprintf(stderr, "\tzone0:              %16u", inode->zone0);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tzone1:              %16u", inode->zone1);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tzone2:              %16u", inode->zone2);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tzone3:              %16u", inode->zone3);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tzone4:              %16u", inode->zone4);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tzone5:              %16u", inode->zone5);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tzone6:              %16u", inode->zone6);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tindirectZone:       %16u", inode->indirectZone);
+	fprintf(stderr, "  \\\n");
+	fprintf(stderr, "\tdoubleIndirectZone: %16u", inode->doubleIndirectZone);
+	fprintf(stderr, "   | Used for files larger than 7 zones\n");
+	fprintf(stderr, "\ttripleIndirectZone: %16u", inode->tripleIndirectZone);
+	fprintf(stderr, "  / <- (unused)\n");
+}
+

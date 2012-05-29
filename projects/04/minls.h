@@ -18,6 +18,7 @@ void build_superblock(superblock* superBlock, FILE* diskImage, bool verbose);
 void build_partition(partition* partition, FILE* diskImage, bool verbose);
 void print_superblock(superblock* superBlock);
 void print_partition(partition* partition);
+void print_inode(inode* inode);
 
 #endif
 
