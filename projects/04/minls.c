@@ -11,10 +11,10 @@ int main(int argc, char *argv[]) {
 	extern char* optarg;
 	extern int optopt, optind;
 	bool verbose = false;
-	char* part,
-	    * subpart,
-	    * imagefile,
-	    * path;
+	char* part = NULL,
+	    * subpart = NULL,
+	    * imagefile = NULL,
+	    * path = NULL;
 	FILE* diskImage;
 	partition partitionTable[4];
 	superblock superBlock;
@@ -62,7 +62,9 @@ int main(int argc, char *argv[]) {
 		show_help_and_exit();
 	}
 	
-	build_partition(partitionTable, diskImage);
+	if (part) {
+		build_partition(partitionTable, diskImage);
+	}
 	build_superblock(&superBlock, diskImage);
 }
 
