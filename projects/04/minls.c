@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
 		switch (c) {
 			case 'v':
-				printf("Verbose mode.\n");
 				verbose = true;
 				break;
 			case 'p':
@@ -54,8 +53,10 @@ int main(int argc, char *argv[]) {
 		show_help_and_exit();
 	}
 	
-	printf("Imagefile: %s\n", imagefile);
-	printf("Path:      %s\n", path);
+	if (verbose) {
+		printf("Imagefile: %s\n", imagefile);
+		printf("Path:      %s\n", path);
+	}
 	diskImage = fopen(imagefile, "rb");
 	if (diskImage == NULL) {
 		fprintf(stderr, "Cannot read file %s.\n", imagefile);
@@ -63,9 +64,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	if (part) {
-		build_partition(partitionTable, diskImage);
+		build_partition(partitionTable, diskImage, verbose);
 	}
-	build_superblock(&superBlock, diskImage);
+	build_superblock(&superBlock, diskImage, verbose);
 }
 
 void show_help_and_exit() {
@@ -74,7 +75,7 @@ void show_help_and_exit() {
 	exit(EXIT_FAILURE);
 }
 
-void build_partition(partition partitionTable[], FILE* diskImage) {
+void build_partition(partition partitionTable[], FILE* diskImage, bool verbose) {
 	int i;
 	uint8_t byte[2];
 	
@@ -85,23 +86,28 @@ void build_partition(partition partitionTable[], FILE* diskImage) {
 	fread(byte+1, 1, 1, diskImage);
 	printf("Second magic byte is %x (%x expected)\n", byte[1], MAGIC_BYTE_TWO);
 	
-	if (byte[0] != MAGIC_BYTE_ONE
-	 || byte[1] != MAGIC_BYTE_TWO) {
+	if (verbose
+	 && (byte[0] != MAGIC_BYTE_ONE
+	  || byte[1] != MAGIC_BYTE_TWO)) {
 		fprintf(stderr, "Not a valid partition table!\n");
 		exit(EXIT_FAILURE);
 	}
 	
 	fseek(diskImage, PARTITION_TABLE_OFFSET, SEEK_SET);
 	fread(partitionTable, sizeof(partition), 4, diskImage);
-	for (i = 0; i < 4; i++) {
-		print_partition(partitionTable+i);
+	if (verbose) {
+		for (i = 0; i < 4; i++) {
+			print_partition(partitionTable+i);
+		}
 	}
 }
 
-void build_superblock(superblock* superBlock, FILE* diskImage) {
+void build_superblock(superblock* superBlock, FILE* diskImage, bool verbose) {
 	fseek(diskImage, SUPER_BLOCK_OFFSET, SEEK_SET);
 	fread(superBlock, sizeof(superblock), 1, diskImage);
-	print_superblock(superBlock);
+	if (verbose) {
+		print_superblock(superBlock);
+	}
 }
 
 /******************************************************************************\
@@ -112,82 +118,82 @@ void build_superblock(superblock* superBlock, FILE* diskImage) {
  * Wouldn't it be nice if C had facilities for printing out structures?
  */
 void print_superblock(superblock* superBlock) {
-	printf("superblock at %p:\n", superBlock);
-	printf("\ts_ninodes:          %16lu", superBlock->s_ninodes);
-	printf("  Usable inodes on the minor device\n");
-	printf("\ts_nzones:           %16d", superBlock->s_nzones);
-	printf("  Total device size, including bit maps etc\n");
-	printf("\ts_imap_blocks:      %16d", superBlock->s_imap_blocks);
-	printf("  # of blocks used by inode bit map\n");
-	printf("\ts_zmap_blocks:      %16d", superBlock->s_zmap_blocks);
-	printf("  # of blocks used by zone bit map\n");
-	printf("\ts_firstdatazone:    %16d", superBlock->s_firstdatazone);
-	printf("  number of first data zone (small)\n");
-	printf("\ts_log_zone_size:    %16d", superBlock->s_log_zone_size);
-	printf("  log2 of blocks/zone\n");
-	printf("\ts_pad:              %16d", superBlock->s_pad);
-	printf("  try to avoid compiler-dependent padding\n");
-	printf("\ts_max_size:         %16lld", superBlock->s_max_size);
-	printf("  maximum file size on this device\n");
-	printf("\ts_zones:            %16lu", superBlock->s_zones);
-	printf("  number of zones (replaces s_nzones in V2)\n");
-	printf("\ts_magic:            %16d", superBlock->s_magic);
-	printf("  magic number to recognize super-blocks\n");
+	fprintf(stderr, "superblock at %p:\n", superBlock);
+	fprintf(stderr, "\ts_ninodes:          %16lu", superBlock->s_ninodes);
+	fprintf(stderr, "  Usable inodes on the minor device\n");
+	fprintf(stderr, "\ts_nzones:           %16d", superBlock->s_nzones);
+	fprintf(stderr, "  Total device size, including bit maps etc\n");
+	fprintf(stderr, "\ts_imap_blocks:      %16d", superBlock->s_imap_blocks);
+	fprintf(stderr, "  # of blocks used by inode bit map\n");
+	fprintf(stderr, "\ts_zmap_blocks:      %16d", superBlock->s_zmap_blocks);
+	fprintf(stderr, "  # of blocks used by zone bit map\n");
+	fprintf(stderr, "\ts_firstdatazone:    %16d", superBlock->s_firstdatazone);
+	fprintf(stderr, "  number of first data zone (small)\n");
+	fprintf(stderr, "\ts_log_zone_size:    %16d", superBlock->s_log_zone_size);
+	fprintf(stderr, "  log2 of blocks/zone\n");
+	fprintf(stderr, "\ts_pad:              %16d", superBlock->s_pad);
+	fprintf(stderr, "  try to avoid compiler-dependent padding\n");
+	fprintf(stderr, "\ts_max_size:         %16lld", superBlock->s_max_size);
+	fprintf(stderr, "  maximum file size on this device\n");
+	fprintf(stderr, "\ts_zones:            %16lu", superBlock->s_zones);
+	fprintf(stderr, "  number of zones (replaces s_nzones in V2)\n");
+	fprintf(stderr, "\ts_magic:            %16d", superBlock->s_magic);
+	fprintf(stderr, "  magic number to recognize super-blocks\n");
 	/* V3 and higher filesystems only. */
-	printf("\n");
-	printf("\ts_pad2:             %16d", superBlock->s_pad2);
-	printf("  try to avoid compiler-dependent padding\n");
-	printf("\ts_block_size:       %16d", superBlock->s_block_size);
-	printf("  block size in bytes\n");
-	printf("\ts_disk_version:     %16d", superBlock->s_disk_version);
-	printf("  filesystem format sub-version\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "\ts_pad2:             %16d", superBlock->s_pad2);
+	fprintf(stderr, "  try to avoid compiler-dependent padding\n");
+	fprintf(stderr, "\ts_block_size:       %16d", superBlock->s_block_size);
+	fprintf(stderr, "  block size in bytes\n");
+	fprintf(stderr, "\ts_disk_version:     %16d", superBlock->s_disk_version);
+	fprintf(stderr, "  filesystem format sub-version\n");
 	/* The following items are only used when the super_block is in memory. */
-	printf("\n");
-	printf("\ts_isup:             %16p", superBlock->s_isup);
-	printf("  inode for root dir of mounted file sys\n");
-	printf("\ts_imount:           %16p", superBlock->s_imount);
-	printf("  inode mounted on\n");
-	printf("\ts_inodes_per_block: %16d", superBlock->s_inodes_per_block);
-	printf("  precalculated from magic number\n");
-	printf("\ts_dev:              %16d", superBlock->s_dev);
-	printf("  whose super block is this?\n");
-	printf("\ts_rd_only:          %16d", superBlock->s_rd_only);
-	printf("  set to 1 iff file sys mounted read only\n");
-	printf("\ts_native:           %16d", superBlock->s_native);
-	printf("  set to 1 iff not byte swapped file system\n");
-	printf("\ts_version:          %16d", superBlock->s_version);
-	printf("  file system version, zero means bad magic\n");
-	printf("\ts_ndzones:          %16d", superBlock->s_ndzones);
-	printf("  # direct zones in an inode\n");
-	printf("\ts_nindirs:          %16d", superBlock->s_nindirs);
-	printf("  # indirect zones per indirect block\n");
-	printf("\ts_isearch:          %16lu", superBlock->s_isearch);
-	printf("  inodes below this bit number are in use\n");
-	printf("\ts_zsearch:          %16lu", superBlock->s_zsearch);
-	printf("  all zones below this bit number are in use\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "\ts_isup:             %16p", superBlock->s_isup);
+	fprintf(stderr, "  inode for root dir of mounted file sys\n");
+	fprintf(stderr, "\ts_imount:           %16p", superBlock->s_imount);
+	fprintf(stderr, "  inode mounted on\n");
+	fprintf(stderr, "\ts_inodes_per_block: %16d", superBlock->s_inodes_per_block);
+	fprintf(stderr, "  precalculated from magic number\n");
+	fprintf(stderr, "\ts_dev:              %16d", superBlock->s_dev);
+	fprintf(stderr, "  whose super block is this?\n");
+	fprintf(stderr, "\ts_rd_only:          %16d", superBlock->s_rd_only);
+	fprintf(stderr, "  set to 1 iff file sys mounted read only\n");
+	fprintf(stderr, "\ts_native:           %16d", superBlock->s_native);
+	fprintf(stderr, "  set to 1 iff not byte swapped file system\n");
+	fprintf(stderr, "\ts_version:          %16d", superBlock->s_version);
+	fprintf(stderr, "  file system version, zero means bad magic\n");
+	fprintf(stderr, "\ts_ndzones:          %16d", superBlock->s_ndzones);
+	fprintf(stderr, "  # direct zones in an inode\n");
+	fprintf(stderr, "\ts_nindirs:          %16d", superBlock->s_nindirs);
+	fprintf(stderr, "  # indirect zones per indirect block\n");
+	fprintf(stderr, "\ts_isearch:          %16lu", superBlock->s_isearch);
+	fprintf(stderr, "  inodes below this bit number are in use\n");
+	fprintf(stderr, "\ts_zsearch:          %16lu", superBlock->s_zsearch);
+	fprintf(stderr, "  all zones below this bit number are in use\n");
 }
 
 void print_partition(partition* partition) {
-	printf("partition at %p:\n", partition);
-	printf("\tbootind:    %16x", partition->bootind);
-	printf("  Boot magic number (0x80 if bootable)\n");
-	printf("\tstart_head: %16u", partition->start_head);
-	printf("  \n");
-	printf("\tstart_sec:  %16u", partition->start_sec);
-	printf("  \n");
-	printf("\tstart_cyl:  %16u", partition->start_cyl);
-	printf("  \n");
-	printf("\ttype:       %16x", partition->type);
-	printf("  Type of partition (0x81 is MINIX)\n");
-	printf("\tend_head:   %16u", partition->end_head);
-	printf("  End of partition in CHS\n");
-	printf("\tend_sec:    %16u", partition->end_sec);
-	printf("  \n");
-	printf("\tend_cyl:    %16u", partition->end_cyl);
-	printf("  \n");
-	printf("\tlFirst:     %16lu", partition->lFirst);
-	printf("  First sector (LBA addressing)\n");
-	printf("\tsize:       %16lu", partition->size);
-	printf("  Size of partition (in sectors)\n");
+	fprintf(stderr, "partition at %p:\n", partition);
+	fprintf(stderr, "\tbootind:    %16x", partition->bootind);
+	fprintf(stderr, "  Boot magic number (0x80 if bootable)\n");
+	fprintf(stderr, "\tstart_head: %16u", partition->start_head);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tstart_sec:  %16u", partition->start_sec);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tstart_cyl:  %16u", partition->start_cyl);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\ttype:       %16x", partition->type);
+	fprintf(stderr, "  Type of partition (0x81 is MINIX)\n");
+	fprintf(stderr, "\tend_head:   %16u", partition->end_head);
+	fprintf(stderr, "  End of partition in CHS\n");
+	fprintf(stderr, "\tend_sec:    %16u", partition->end_sec);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tend_cyl:    %16u", partition->end_cyl);
+	fprintf(stderr, "  \n");
+	fprintf(stderr, "\tlFirst:     %16lu", partition->lFirst);
+	fprintf(stderr, "  First sector (LBA addressing)\n");
+	fprintf(stderr, "\tsize:       %16lu", partition->size);
+	fprintf(stderr, "  Size of partition (in sectors)\n");
 }
 
