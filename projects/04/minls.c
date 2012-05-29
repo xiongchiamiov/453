@@ -7,7 +7,8 @@
 int main(int argc, char *argv[]) {
 	/* This is modified from Wikipedia's getopt example:
 	 * https://en.wikipedia.org/w/index.php?title=Getopt&oldid=489461319 */
-	int c;
+	int c,
+	    i;
 	extern char* optarg;
 	extern int optopt, optind;
 	bool verbose = false;
@@ -19,6 +20,7 @@ int main(int argc, char *argv[]) {
 	partition partitionTable[4];
 	superblock superBlock;
 	inode* inodeList;
+	directory* fileList;
 	
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
 		switch (c) {
@@ -70,6 +72,16 @@ int main(int argc, char *argv[]) {
 	}
 	build_superblock(&superBlock, diskImage, verbose);
 	inodeList = build_inode(&superBlock, diskImage, verbose);
+	
+	fileList = read_zone(inodeList[0].zone0, diskImage, inodeList[0].numLinks,
+	                     &superBlock);
+	if (verbose) {
+		/* Go two larger to account for . and .. */
+		for (i = 0; i < inodeList[0].numLinks + 2; i++) {
+			fprintf(stderr, "File with name: %s\n", fileList[i].name);
+			print_inode(inodeList + fileList[i].inode);
+		}
+	}
 }
 
 void show_help_and_exit() {
@@ -135,6 +147,22 @@ inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
 	}
 	
 	return inodeList;
+}
+
+directory* read_zone(int zone, FILE* diskImage, int numFiles,
+                     superblock* superBlock) {
+	int zonesize;
+	directory* fileList;
+	
+	/* We'll also be reading in . and .. */
+	numFiles += 2;
+	
+	zonesize = superBlock->s_block_size << superBlock->s_log_zone_size;
+	fseek(diskImage, zone * zonesize, SEEK_SET);
+	fileList = malloc(numFiles * sizeof(directory));
+	fread(fileList, sizeof(directory), numFiles, diskImage);
+	
+	return fileList;
 }
 
 /******************************************************************************\
