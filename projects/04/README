@@ -3,7 +3,6 @@ CPE 453 Assignment 4
 
 # TODO #
 
-* Work with paths other than /
 * Use `u_intX_t` types in all structures
 * Only list directories and regular files
 * Fail gracefully when selecting no partition on a partitioned disc
@@ -11,4 +10,5 @@ CPE 453 Assignment 4
 * Work with subpartitions
 * Work with directories that use more than one zone
 * Extract out generic pieces for minget
+* Path .. directories correctly
 

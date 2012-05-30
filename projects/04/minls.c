@@ -15,7 +15,9 @@ int main(int argc, char *argv[]) {
 	char* part = NULL,
 	    * subpart = NULL,
 	    * imagefile = NULL,
-	    * path = NULL;
+	    * path = NULL,
+	    * pathComponent,
+	    * pathSeparator = "/";
 	FILE* diskImage;
 	partition partitionTable[4];
 	superblock superBlock;
@@ -81,9 +83,26 @@ int main(int argc, char *argv[]) {
 	build_superblock(&superBlock, diskImage, verbose);
 	inodeList = build_inode(&superBlock, diskImage, verbose);
 	
-	fileList = read_zone(inodeList[0].zone0, diskImage, &superBlock);
-	
 	printf("%s:\n", path);
+	
+	/* Inode 1 is the root */
+	for (i = 1;;) {
+		fileList = read_zone(inodeList[i - 1].zone0, diskImage, &superBlock);
+		/* strtok wants path on the first call, but not after that... */
+		pathComponent = strtok((i == 1) ? path : NULL, pathSeparator);
+		/* Are we at the end of the path? */
+		if (pathComponent == NULL) {
+			break;
+		}
+		printf("path is %s\n", pathComponent);
+		
+		i = search_for_inode(pathComponent, fileList, inodeList[i - 1].numLinks + 2);
+		if (i == 0) {
+			fprintf(stderr, "File %s not found!\n", path);
+			exit(1);
+		}
+	}
+	
 	for (i = 0, nonDeletedFiles = 0;
 	     nonDeletedFiles < inodeList[0].numLinks + 2;
 	     i++) {
@@ -191,6 +210,27 @@ directory* read_zone(int zone, FILE* diskImage, superblock* superBlock) {
 	fread(fileList, zonesize, 1, diskImage);
 	
 	return fileList;
+}
+
+int search_for_inode(char* pathComponent, directory* fileList, int limit) {
+	int i,
+	    nonDeletedFiles;
+	
+	for (i = 0, nonDeletedFiles = 0;
+	     nonDeletedFiles < limit;
+	     i++) {
+		/* Skip deleted files. */
+		if (fileList[i].inode == 0) {
+			continue;
+		}
+		nonDeletedFiles++;
+		
+		/* Did we find a match? */
+		if (strcmp((char *)(fileList[i].name), pathComponent) == 0) {
+			return fileList[i].inode;
+		}
+	}
+	return 0;
 }
 
 char* generate_permission_string(small mode) {
