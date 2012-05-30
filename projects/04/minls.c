@@ -88,9 +88,15 @@ int main(int argc, char *argv[]) {
 	printf("%s:\n", path);
 	for (i = 0; i < inodeList[0].numLinks + 2; i++) {
 		file = fileList[i];
+		/* Skip deleted files. */
+		if (file.inode == 0) {
+			fprintf(stderr, "File %s deleted.\n", file.name);
+			continue;
+		}
 		printf("%s %9d %s\n",
-		       generate_permission_string(inodeList[file.inode].mode),
-		       inodeList[file.inode].fileSize,
+		       /* inodes are 1-indexed */
+		       generate_permission_string(inodeList[file.inode - 1].mode),
+		       inodeList[file.inode - 1].fileSize,
 		       file.name); /* TODO: Deal with 60-length names */
 	}
 }
