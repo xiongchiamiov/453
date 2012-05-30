@@ -6,8 +6,6 @@
 #include "minls.h"
 
 int main(int argc, char *argv[]) {
-	/* This is modified from Wikipedia's getopt example:
-	 * https://en.wikipedia.org/w/index.php?title=Getopt&oldid=489461319 */
 	int c,
 	    i,
 	    nonDeletedFiles;
@@ -26,6 +24,8 @@ int main(int argc, char *argv[]) {
 	directory file;
 	char filename[61];
 	
+	/* This is modified from Wikipedia's getopt example:
+	 * https://en.wikipedia.org/w/index.php?title=Getopt&oldid=489461319 */
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
 		switch (c) {
 			case 'v':
