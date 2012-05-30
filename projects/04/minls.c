@@ -92,7 +92,9 @@ int main(int argc, char *argv[]) {
 		
 		/* Skip deleted files. */
 		if (file.inode == 0) {
-			fprintf(stderr, "File %s deleted.\n", file.name);
+			if (verbose) {
+				fprintf(stderr, "File %s deleted.\n", file.name);
+			}
 			continue;
 		}
 		nonDeletedFiles++;
@@ -192,7 +194,7 @@ char* generate_permission_string(small mode) {
 	
 	permissions = malloc(10 * sizeof(char));
 	strcpy(permissions, "----------");
-	printf("Generating permission string from mode %07o...\n", mode);
+	/*printf("Generating permission string from mode %07o...\n", mode);*/
 	
 	if (mode & 040000) {
 		permissions[0] = 'd';
