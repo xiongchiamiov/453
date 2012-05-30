@@ -9,7 +9,8 @@ int main(int argc, char *argv[]) {
 	/* This is modified from Wikipedia's getopt example:
 	 * https://en.wikipedia.org/w/index.php?title=Getopt&oldid=489461319 */
 	int c,
-	    i;
+	    i,
+	    nonDeletedFiles;
 	extern char* optarg;
 	extern int optopt, optind;
 	bool verbose = false;
@@ -76,24 +77,26 @@ int main(int argc, char *argv[]) {
 	build_superblock(&superBlock, diskImage, verbose);
 	inodeList = build_inode(&superBlock, diskImage, verbose);
 	
-	fileList = read_zone(inodeList[0].zone0, diskImage, inodeList[0].numLinks,
-	                     &superBlock);
-	if (verbose) {
-		/* Go two larger to account for . and .. */
-		for (i = 0; i < inodeList[0].numLinks + 2; i++) {
+	fileList = read_zone(inodeList[0].zone0, diskImage, &superBlock);
+	
+	printf("%s:\n", path);
+	for (i = 0, nonDeletedFiles = 0;
+	     nonDeletedFiles < inodeList[0].numLinks + 2;
+	     i++) {
+		if (verbose) {
 			fprintf(stderr, "File with name: %s\n", fileList[i].name);
 			print_inode(inodeList + fileList[i].inode);
 		}
-	}
-	
-	printf("%s:\n", path);
-	for (i = 0; i < inodeList[0].numLinks + 2; i++) {
+		 
 		file = fileList[i];
+		
 		/* Skip deleted files. */
 		if (file.inode == 0) {
 			fprintf(stderr, "File %s deleted.\n", file.name);
 			continue;
 		}
+		nonDeletedFiles++;
+		
 		/* If the name is 60 characters, it's not null-terminated.  So, make
 		 * sure there's a null at the end. */
 		strncpy(filename, (char *)(file.name), 60);
@@ -172,18 +175,14 @@ inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
 	return inodeList;
 }
 
-directory* read_zone(int zone, FILE* diskImage, int numFiles,
-                     superblock* superBlock) {
+directory* read_zone(int zone, FILE* diskImage, superblock* superBlock) {
 	int zonesize;
 	directory* fileList;
 	
-	/* We'll also be reading in . and .. */
-	numFiles += 2;
-	
 	zonesize = superBlock->s_block_size << superBlock->s_log_zone_size;
 	fseek(diskImage, zone * zonesize, SEEK_SET);
-	fileList = malloc(numFiles * sizeof(directory));
-	fread(fileList, sizeof(directory), numFiles, diskImage);
+	fileList = malloc(zonesize);
+	fread(fileList, zonesize, 1, diskImage);
 	
 	return fileList;
 }
