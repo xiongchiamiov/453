@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
 	inode* inodeList;
 	directory* fileList;
 	directory file;
+	char filename[61];
 	
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
 		switch (c) {
@@ -93,11 +94,16 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "File %s deleted.\n", file.name);
 			continue;
 		}
+		/* If the name is 60 characters, it's not null-terminated.  So, make
+		 * sure there's a null at the end. */
+		strncpy(filename, (char *)(file.name), 60);
+		filename[61] = '\0';
+		
 		printf("%s %9d %s\n",
 		       /* inodes are 1-indexed */
 		       generate_permission_string(inodeList[file.inode - 1].mode),
 		       inodeList[file.inode - 1].fileSize,
-		       file.name); /* TODO: Deal with 60-length names */
+		       filename);
 	}
 }
 
