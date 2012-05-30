@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "minls.h"
@@ -21,6 +22,7 @@ int main(int argc, char *argv[]) {
 	superblock superBlock;
 	inode* inodeList;
 	directory* fileList;
+	directory file;
 	
 	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
 		switch (c) {
@@ -81,6 +83,15 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "File with name: %s\n", fileList[i].name);
 			print_inode(inodeList + fileList[i].inode);
 		}
+	}
+	
+	printf("%s:\n", path);
+	for (i = 0; i < inodeList[0].numLinks + 2; i++) {
+		file = fileList[i];
+		printf("%s %9d %s\n",
+		       generate_permission_string(inodeList[file.inode].mode),
+		       inodeList[file.inode].fileSize,
+		       file.name); /* TODO: Deal with 60-length names */
 	}
 }
 
@@ -163,6 +174,47 @@ directory* read_zone(int zone, FILE* diskImage, int numFiles,
 	fread(fileList, sizeof(directory), numFiles, diskImage);
 	
 	return fileList;
+}
+
+char* generate_permission_string(small mode) {
+	char* permissions;
+	
+	permissions = malloc(10 * sizeof(char));
+	strcpy(permissions, "----------");
+	printf("Generating permission string from mode %07o...\n", mode);
+	
+	if (mode & 040000) {
+		permissions[0] = 'd';
+	}
+	if (mode & 0400) {
+		permissions[1] = 'r';
+	}
+	if (mode & 0200) {
+		permissions[2] = 'w';
+	}
+	if (mode & 0100) {
+		permissions[3] = 'x';
+	}
+	if (mode & 0040) {
+		permissions[4] = 'r';
+	}
+	if (mode & 0020) {
+		permissions[5] = 'w';
+	}
+	if (mode & 0010) {
+		permissions[6] = 'x';
+	}
+	if (mode & 0004) {
+		permissions[7] = 'r';
+	}
+	if (mode & 0002) {
+		permissions[8] = 'w';
+	}
+	if (mode & 0001) {
+		permissions[9] = 'x';
+	}
+	
+	return permissions;
 }
 
 /******************************************************************************\
