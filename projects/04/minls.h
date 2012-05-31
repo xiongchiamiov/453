@@ -20,6 +20,7 @@ void build_partition(partition* partition, FILE* diskImage, bool verbose);
 inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose);
 directory* read_zone(int zone, FILE* diskImage, superblock* superBlock);
 int search_for_inode(char* pathComponent, directory* fileList, int limit);
+directory* filter_file_list(directory* fileList, char* name);
 char* generate_permission_string(small mode);
 void print_superblock(superblock* superBlock);
 void print_partition(partition* partition);

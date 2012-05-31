@@ -8,7 +8,9 @@
 int main(int argc, char *argv[]) {
 	int c,
 	    i,
-	    nonDeletedFiles;
+	    currentInode,
+	    nonDeletedFiles,
+	    numExtraFiles;
 	extern char* optarg;
 	extern int optopt, optind;
 	bool verbose = false;
@@ -85,26 +87,51 @@ int main(int argc, char *argv[]) {
 	
 	printf("%s:\n", path);
 	
+	/* Do special-case stuff for the root (/) */
 	/* Inode 1 is the root */
-	for (i = 1;;) {
-		fileList = read_zone(inodeList[i - 1].zone0, diskImage, &superBlock);
-		/* strtok wants path on the first call, but not after that... */
-		pathComponent = strtok((i == 1) ? path : NULL, pathSeparator);
-		/* Are we at the end of the path? */
-		if (pathComponent == NULL) {
-			break;
-		}
+	currentInode = 1;
+	/* . and .. won't be accounted for in the inode's link counter. */
+	numExtraFiles = 2;
+	/* Get file list */
+	fileList = read_zone(inodeList[currentInode - 1].zone0, diskImage,
+	                     &superBlock);
+	pathComponent = strtok(path, pathSeparator);
+	
+	/* Walk on down the tree while there are still branches to walk down */
+	while (pathComponent != NULL) {
 		printf("path is %s\n", pathComponent);
 		
-		i = search_for_inode(pathComponent, fileList, inodeList[i - 1].numLinks + 2);
-		if (i == 0) {
+		/* Get inode for this part of the path. */
+		currentInode = search_for_inode(pathComponent, fileList,
+		                                inodeList[currentInode - 1].numLinks + 2);
+		if (currentInode == 0) {
 			fprintf(stderr, "File %s not found!\n", path);
 			exit(1);
 		}
+		
+		/* Is this a directory? */
+		if (inodeList[currentInode - 1].mode & 040000) {
+			printf("%s is a directory\n", pathComponent);
+			/* (Yes) Get list of contained files */
+			fileList = read_zone(inodeList[currentInode - 1].zone0, diskImage,
+			                     &superBlock);
+			/* . and .. won't be accounted for in the inode's link counter. */
+			numExtraFiles = 2;
+		} else {
+			printf("%s is a file\n", pathComponent);
+			/* (No) Filter down filelist to just this file */
+			fileList = filter_file_list(fileList, pathComponent);
+			/* We don't care about . or .. for a file. */
+			numExtraFiles = 0;
+		}
+		/* Get the next branch of the path-tree, if there is one. */
+		pathComponent = strtok(NULL, pathSeparator);
 	}
 	
+	/* Print out all of our files.  Since we don't actually know how long the
+	 * list is, rely upon the inode's recorded number of links. */
 	for (i = 0, nonDeletedFiles = 0;
-	     nonDeletedFiles < inodeList[0].numLinks + 2;
+	     nonDeletedFiles < inodeList[currentInode - 1].numLinks + numExtraFiles;
 	     i++) {
 		file = fileList[i];
 		
@@ -212,6 +239,10 @@ directory* read_zone(int zone, FILE* diskImage, superblock* superBlock) {
 	return fileList;
 }
 
+/**
+ * Find the directory listing that has name `pathComponent` and return its
+ * corresponding inode number.
+ */
 int search_for_inode(char* pathComponent, directory* fileList, int limit) {
 	int i,
 	    nonDeletedFiles;
@@ -231,6 +262,33 @@ int search_for_inode(char* pathComponent, directory* fileList, int limit) {
 		}
 	}
 	return 0;
+}
+
+/**
+ * Cut down `fileList` to only the file that has name `name`.  Unspecified
+ * behavior if `name` is not found.  Frees `fileList` when done and returns a
+ * pointer to a newly-allocated `directory`.
+ */
+directory* filter_file_list(directory* fileList, char* name) {
+	int i,
+	    j;
+	directory* file;
+	
+	file = malloc(sizeof(directory));
+	
+	for (i = 0; ; i++) {
+		if (strcmp(name, (char *)(fileList[i].name)) == 0) {
+			file->inode = fileList[i].inode;
+			/* Copy name. */
+			for (j = 0; j < 60; j++) {
+				file->name[j] = fileList[i].name[j];
+			}
+			break;
+		}
+	}
+	
+	free(fileList);
+	return file;
 }
 
 char* generate_permission_string(small mode) {
