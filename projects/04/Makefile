@@ -11,14 +11,23 @@ HARDEN=-D_FORTIFY_SOURCE
 CFLAGS=-Wall -g -std=c89 -pedantic $(SUS3) $(HARDEN)
 LDFLAGS=
 
-ALL=minls
+ALL=minls minget
 
 all:	$(ALL)
 
-minls: minls.o
+minls: minls.o min.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 minls.o: minls.c minls.h
+	$(CC) $(CFLAGS) -c $<
+
+minget: minget.o min.o
+	$(CC) $(LDFLAGS) -o $@ $^
+
+minget.o: minget.c minget.h
+	$(CC) $(CFLAGS) -c $<
+
+min.o: min.c min.h
 	$(CC) $(CFLAGS) -c $<
 
 handin:
