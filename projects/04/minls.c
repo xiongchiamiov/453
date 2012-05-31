@@ -106,11 +106,6 @@ int main(int argc, char *argv[]) {
 	for (i = 0, nonDeletedFiles = 0;
 	     nonDeletedFiles < inodeList[0].numLinks + 2;
 	     i++) {
-		if (verbose) {
-			fprintf(stderr, "File with name: %s\n", fileList[i].name);
-			print_inode(inodeList + fileList[i].inode);
-		}
-		 
 		file = fileList[i];
 		
 		/* Skip deleted files. */
@@ -127,6 +122,11 @@ int main(int argc, char *argv[]) {
 		strncpy(filename, (char *)(file.name), 60);
 		filename[61] = '\0';
 		
+		if (verbose) {
+			fprintf(stderr, "File with name: %s\n", filename);
+			print_inode(inodeList + file.inode - 1);
+		}
+		 
 		printf("%s %9d %s\n",
 		       /* inodes are 1-indexed */
 		       generate_permission_string(inodeList[file.inode - 1].mode),
