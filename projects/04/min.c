@@ -1,8 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "min.h"
+
+int parse_flagged_arguments(int argc, char* argv[], bool* verbose, char* part,
+                            char* subpart) {
+	int c;
+	
+	/* This is modified from Wikipedia's getopt example:
+	 * https://en.wikipedia.org/w/index.php?title=Getopt&oldid=489461319 */
+	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
+		switch (c) {
+			case 'v':
+				*verbose = true;
+				break;
+			case 'p':
+				printf("Part %s selected.\n", optarg);
+				strcpy(part, optarg);
+				break;
+			case 's':
+				printf("Subpart %s selected.\n", optarg);
+				strcpy(subpart, optarg);
+				break;
+			case 'h':
+				return -1;
+			case '?':
+				fprintf(stderr, "Unknown arg %c\n", optopt);
+				return -1;
+		}
+	}
+	
+	return optind;
+}
 
 void build_partition(partition partitionTable[], FILE* diskImage, bool verbose) {
 	int i;
@@ -61,6 +92,18 @@ inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
 	}
 	
 	return inodeList;
+}
+
+directory* read_zone(int zone, FILE* diskImage, superblock* superBlock) {
+	int zonesize;
+	directory* fileList;
+	
+	zonesize = superBlock->s_block_size << superBlock->s_log_zone_size;
+	fseek(diskImage, zone * zonesize, SEEK_SET);
+	fileList = malloc(zonesize);
+	fread(fileList, zonesize, 1, diskImage);
+	
+	return fileList;
 }
 
 /**

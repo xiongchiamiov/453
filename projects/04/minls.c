@@ -1,16 +1,13 @@
 #include <string.h>
-#include <unistd.h>
 
 #include "minls.h"
 
 int main(int argc, char *argv[]) {
-	int c,
-	    i,
+	int i,
 	    currentInode,
 	    nonDeletedFiles,
 	    numExtraFiles;
-	extern char* optarg;
-	extern int optopt, optind;
+	int optind;
 	bool verbose = false;
 	char* part = NULL,
 	    * subpart = NULL,
@@ -26,28 +23,9 @@ int main(int argc, char *argv[]) {
 	directory file;
 	char filename[61];
 	
-	/* This is modified from Wikipedia's getopt example:
-	 * https://en.wikipedia.org/w/index.php?title=Getopt&oldid=489461319 */
-	while ((c = getopt(argc, argv, "vp:s:h")) != -1) {
-		switch (c) {
-			case 'v':
-				verbose = true;
-				break;
-			case 'p':
-				printf("Part %s selected.\n", optarg);
-				part = optarg;
-				break;
-			case 's':
-				printf("Subpart %s selected.\n", optarg);
-				subpart = optarg;
-				break;
-			case 'h':
-				show_help_and_exit();
-			case '?':
-				fprintf(stderr, "Unknown arg %c\n", optopt);
-				show_help_and_exit();
-				break;
-		}
+	optind = parse_flagged_arguments(argc, argv, &verbose, part, subpart);
+	if (optind == -1) {
+		show_help_and_exit();
 	}
 	
 	/* Check for our imagefile and optional path. */
@@ -164,18 +142,6 @@ void show_help_and_exit() {
 	fprintf(stderr,
 	       "Usage: minls [-v] [-p part [-s subpart]] imagefile [path]\n");
 	exit(EXIT_FAILURE);
-}
-
-directory* read_zone(int zone, FILE* diskImage, superblock* superBlock) {
-	int zonesize;
-	directory* fileList;
-	
-	zonesize = superBlock->s_block_size << superBlock->s_log_zone_size;
-	fseek(diskImage, zone * zonesize, SEEK_SET);
-	fileList = malloc(zonesize);
-	fread(fileList, zonesize, 1, diskImage);
-	
-	return fileList;
 }
 
 char* generate_permission_string(small mode) {
