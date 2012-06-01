@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 	
 	/* Walk on down the tree while there are still branches to walk down */
 	while (pathComponent != NULL) {
-		printf("path is %s\n", pathComponent);
+		/*printf("path is %s\n", pathComponent);*/
 		
 		/* Get inode for this part of the path. */
 		currentInode = search_for_inode(pathComponent, fileList,
@@ -89,14 +89,14 @@ int main(int argc, char *argv[]) {
 		
 		/* Is this a directory? */
 		if (inodeList[currentInode - 1].mode & 040000) {
-			printf("%s is a directory\n", pathComponent);
+			/*printf("%s is a directory\n", pathComponent);*/
 			/* (Yes) Get list of contained files */
 			fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
 			                     &superBlock);
 			/* . and .. won't be accounted for in the inode's link counter. */
 			numExtraFiles = 2;
 		} else {
-			printf("%s is a file\n", pathComponent);
+			/*printf("%s is a file\n", pathComponent);*/
 			/* (No) Filter down filelist to just this file */
 			fileList = filter_file_list(fileList, pathComponent);
 			/* We don't care about . or .. for a file. */
