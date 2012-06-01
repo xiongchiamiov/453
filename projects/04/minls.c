@@ -49,10 +49,12 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Cannot read file %s.\n", imagefile);
 		show_help_and_exit();
 	}
+	/* Actually, we want to put relative paths relative to /, automatically.
 	if (path[0] != '/') {
 		fprintf(stderr, "Path %s is not absolute.\n", path);
 		exit(1);
 	}
+	*/
 	
 	/* (partition) -> sector -> block -> zone */
 	if (part) {
