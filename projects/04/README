@@ -3,7 +3,6 @@ CPE 453 Assignment 4
 
 # TODO #
 
-* Fail gracefully when selecting no partition on a partitioned disc
 * Work with partitions
 * Work with subpartitions
 * (minls) Work with directories that use more than one zone

@@ -68,6 +68,11 @@ void build_superblock(superblock* superBlock, FILE* diskImage, bool verbose) {
 	if (verbose) {
 		print_superblock(superBlock);
 	}
+	if (superBlock->s_magic != MINIX_MAGIC) {
+		fprintf(stderr, "Bad magic number. (%#x)\n", superBlock->s_magic);
+		fprintf(stderr, "This doesn't look like a MINIX filesystem.\n");
+		exit(1);
+	}
 }
 
 inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
