@@ -27,16 +27,16 @@
  */
 
 typedef struct super_block {
-  large s_ninodes;		/* # usable inodes on the minor device */
-  small  s_nzones;		/* total device size, including bit maps etc */
-  small s_imap_blocks;		/* # of blocks used by inode bit map */
-  small s_zmap_blocks;		/* # of blocks used by zone bit map */
-  small s_firstdatazone;	/* number of first data zone (small) */
-  small s_log_zone_size;	/* log2 of blocks/zone */
-  small s_pad;			/* try to avoid compiler-dependent padding */
-  large s_max_size;	/* maximum file size on this device */
-  large s_zones;		/* number of zones (replaces s_nzones in V2) */
-  small s_magic;		/* magic number to recognize super-blocks */
+  large s_ninodes;        /* # usable inodes on the minor device */
+  small  s_nzones;        /* total device size, including bit maps etc */
+  small s_imap_blocks;        /* # of blocks used by inode bit map */
+  small s_zmap_blocks;        /* # of blocks used by zone bit map */
+  small s_firstdatazone;    /* number of first data zone (small) */
+  small s_log_zone_size;    /* log2 of blocks/zone */
+  small s_pad;            /* try to avoid compiler-dependent padding */
+  large s_max_size;    /* maximum file size on this device */
+  large s_zones;        /* number of zones (replaces s_nzones in V2) */
+  small s_magic;        /* magic number to recognize super-blocks */
 
   /* The following items are valid on disk only for V3 and above */
 
@@ -44,27 +44,27 @@ typedef struct super_block {
    * multiple. If V1 or V2 filesystem, this should be
    * initialised to STATIC_BLOCK_SIZE.
    */
-  small s_pad2;			/* try to avoid compiler-dependent padding */
-  small s_block_size;	/* block size in bytes. */
-  small s_disk_version;		/* filesystem format sub-version */
+  small s_pad2;            /* try to avoid compiler-dependent padding */
+  small s_block_size;    /* block size in bytes. */
+  small s_disk_version;        /* filesystem format sub-version */
 
   /* The following items are only used when the super_block is in memory. */
   
-  struct inode *s_isup;	/* inode for root dir of mounted file sys */
+  struct inode *s_isup;    /* inode for root dir of mounted file sys */
   struct inode *s_imount;   /* inode mounted on */
-  small s_inodes_per_block;	/* precalculated from magic number */
-  small s_dev;	/* whose super block is this? */
-  small s_rd_only;		/* set to 1 iff file sys mounted read only */
-  small s_native;			/* set to 1 iff not byte swapped file system */
-  small s_version;		/* file system version, zero means bad magic */
-  small s_ndzones;		/* # direct zones in an inode */
-  small s_nindirs;		/* # indirect zones per indirect block */
-  small s_isearch;		/* inodes below this bit number are in use */
-  small s_zsearch;		/* all zones below this bit number are in use*/
+  small s_inodes_per_block;    /* precalculated from magic number */
+  small s_dev;    /* whose super block is this? */
+  small s_rd_only;        /* set to 1 iff file sys mounted read only */
+  small s_native;            /* set to 1 iff not byte swapped file system */
+  small s_version;        /* file system version, zero means bad magic */
+  small s_ndzones;        /* # direct zones in an inode */
+  small s_nindirs;        /* # indirect zones per indirect block */
+  small s_isearch;        /* inodes below this bit number are in use */
+  small s_zsearch;        /* all zones below this bit number are in use*/
 } superblock;
 
-#define IMAP		0	/* operating on the inode bit map */
-#define ZMAP		1	/* operating on the zone bit map */
+#define IMAP        0    /* operating on the inode bit map */
+#define ZMAP        1    /* operating on the zone bit map */
 
 #endif
 
