@@ -4,11 +4,12 @@
 
 int main(int argc, char* argv[]) {
 	int optind,
+	    part = -1,
+	    subpart = -1,
 	    currentInode;
+	unsigned long offset;
 	bool verbose = false;
-	char* part = NULL,
-	    * subpart = NULL,
-	    * imagefile = NULL,
+	char* imagefile = NULL,
 	    * path = NULL,
 	    * pathComponent,
 	    * pathSeparator = "/";
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
 	inode* inodeList;
 	directory* fileList;
 	
-	optind = parse_flagged_arguments(argc, argv, &verbose, part, subpart);
+	optind = parse_flagged_arguments(argc, argv, &verbose, &part, &subpart);
 	if (optind == -1) {
 		show_help_and_exit();
 	}
@@ -59,11 +60,9 @@ int main(int argc, char* argv[]) {
 	*/
 	
 	/* (partition) -> sector -> block -> zone */
-	if (part) {
-		build_partition(partitionTable, diskImage, verbose);
-	}
-	build_superblock(&superBlock, diskImage, verbose);
-	inodeList = build_inode(&superBlock, diskImage, verbose);
+	offset = fetch_partition_offset(part, diskImage, verbose);
+	build_superblock(&superBlock, diskImage, offset, verbose);
+	inodeList = build_inode(&superBlock, diskImage, offset, verbose);
 	
 	/*printf("%s:\n", path);*/
 	
@@ -72,7 +71,7 @@ int main(int argc, char* argv[]) {
 	currentInode = 1;
 	/* Get file list */
 	fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
-	                     &superBlock);
+	                     offset, &superBlock);
 	pathComponent = strtok(path, pathSeparator);
 	
 	/* Walk on down the tree while there are still branches to walk down */
@@ -92,12 +91,12 @@ int main(int argc, char* argv[]) {
 			/*printf("%s is a directory\n", pathComponent);*/
 			/* (Yes) Get list of contained files */
 			fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
-			                     &superBlock);
+			                     offset, &superBlock);
 		} else {
 			/*printf("%s is a file\n", pathComponent);*/
 			/* (No) Copy the sucker over */
 			copy_file_and_exit(inodeList + currentInode - 1, diskImage,
-			                   destination, &superBlock);
+			                   offset, destination, &superBlock);
 		}
 		/* Get the next branch of the path-tree, if there is one. */
 		pathComponent = strtok(NULL, pathSeparator);
@@ -112,8 +111,8 @@ void show_help_and_exit() {
 	exit(EXIT_FAILURE);
 }
 
-void copy_file_and_exit(inode* inode, FILE* diskImage, FILE* destination,
-                        superblock* superBlock) {
+void copy_file_and_exit(inode* inode, FILE* diskImage, unsigned long offset,
+                        FILE* destination, superblock* superBlock) {
 	int zonesize,
 	    zone,
 	    i;
@@ -134,7 +133,7 @@ void copy_file_and_exit(inode* inode, FILE* diskImage, FILE* destination,
 		if (zone == 0) {
 			fread(buffer, zonesize, 1, zeros);
 		} else {
-			fseek(diskImage, zone * zonesize, SEEK_SET);
+			fseek(diskImage, (zone * zonesize) + offset, SEEK_SET);
 			fread(buffer, zonesize, 1, diskImage);
 		}
 		fwrite(buffer, zonesize, 1, destination);

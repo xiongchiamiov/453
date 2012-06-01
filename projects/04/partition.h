@@ -8,6 +8,8 @@
 #define MAGIC_BYTE_ONE_ADDRESS 510
 #define MAGIC_BYTE_TWO 0xAA
 #define MAGIC_BYTE_TWO_ADDRESS 511
+#define MINIX_FILESYSTEM_TYPE 0x81
+#define SECTOR_SIZE 512
 
 #include "types.h"
 

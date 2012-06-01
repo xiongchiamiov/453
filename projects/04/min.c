@@ -5,8 +5,8 @@
 
 #include "min.h"
 
-int parse_flagged_arguments(int argc, char* argv[], bool* verbose, char* part,
-                            char* subpart) {
+int parse_flagged_arguments(int argc, char* argv[], bool* verbose, int* part,
+                            int* subpart) {
 	int c;
 	
 	/* This is modified from Wikipedia's getopt example:
@@ -17,12 +17,10 @@ int parse_flagged_arguments(int argc, char* argv[], bool* verbose, char* part,
 				*verbose = true;
 				break;
 			case 'p':
-				printf("Part %s selected.\n", optarg);
-				strcpy(part, optarg);
+				*part = atoi(optarg);
 				break;
 			case 's':
-				printf("Subpart %s selected.\n", optarg);
-				strcpy(subpart, optarg);
+				*subpart = atoi(optarg);
 				break;
 			case 'h':
 				return -1;
@@ -35,14 +33,47 @@ int parse_flagged_arguments(int argc, char* argv[], bool* verbose, char* part,
 	return optind;
 }
 
-void build_partition(partition partitionTable[], FILE* diskImage, bool verbose) {
+unsigned long fetch_partition_offset(int part, FILE* diskImage, bool verbose) {
+	unsigned long offset;
+	partition partitionTable[4];
+	
+	/* Special value for uninitialized. */
+	if (part == -1) {
+		return 0;
+	}
+	
+	/* Check bounds. */
+	if (part < 0 || part > 3) {
+		fprintf(stderr,
+		        "There are only 4 primary partitions on a disk (0-indexed)\n");
+		exit(1);
+	}
+	
+	build_partition(partitionTable, diskImage, offset, verbose);
+	if (partitionTable[part].type != MINIX_FILESYSTEM_TYPE) {
+		fprintf(stderr, "Bad partition type. (%#x)\n",
+		        partitionTable[part].type);
+		fprintf(stderr, "This doesn't appear to be a Minix partition.\n");
+		exit(1);
+	}
+	
+	offset = partitionTable[part].lFirst * SECTOR_SIZE;
+	if (verbose) {
+		fprintf(stderr, "Calculated offset for the partition is %lu bytes.\n",
+		        offset);
+	}
+	return offset;
+}
+
+void build_partition(partition partitionTable[], FILE* diskImage,
+                     unsigned long offset, bool verbose) {
 	int i;
 	u_int8_t byte[2];
 	
-	fseek(diskImage, MAGIC_BYTE_ONE_ADDRESS, SEEK_SET);
+	fseek(diskImage, MAGIC_BYTE_ONE_ADDRESS + offset, SEEK_SET);
 	fread(byte, 1, 1, diskImage);
 	printf("First magic byte is %x (%x expected)\n", byte[0], MAGIC_BYTE_ONE);
-	fseek(diskImage, MAGIC_BYTE_TWO_ADDRESS, SEEK_SET);
+	fseek(diskImage, MAGIC_BYTE_TWO_ADDRESS + offset, SEEK_SET);
 	fread(byte+1, 1, 1, diskImage);
 	printf("Second magic byte is %x (%x expected)\n", byte[1], MAGIC_BYTE_TWO);
 	
@@ -53,7 +84,7 @@ void build_partition(partition partitionTable[], FILE* diskImage, bool verbose) 
 		exit(EXIT_FAILURE);
 	}
 	
-	fseek(diskImage, PARTITION_TABLE_OFFSET, SEEK_SET);
+	fseek(diskImage, PARTITION_TABLE_OFFSET + offset, SEEK_SET);
 	fread(partitionTable, sizeof(partition), 4, diskImage);
 	if (verbose) {
 		for (i = 0; i < 4; i++) {
@@ -62,8 +93,9 @@ void build_partition(partition partitionTable[], FILE* diskImage, bool verbose) 
 	}
 }
 
-void build_superblock(superblock* superBlock, FILE* diskImage, bool verbose) {
-	fseek(diskImage, SUPER_BLOCK_OFFSET, SEEK_SET);
+void build_superblock(superblock* superBlock, FILE* diskImage,
+                      unsigned long offset, bool verbose) {
+	fseek(diskImage, SUPER_BLOCK_OFFSET + offset, SEEK_SET);
 	fread(superBlock, sizeof(superblock), 1, diskImage);
 	if (verbose) {
 		print_superblock(superBlock);
@@ -75,7 +107,8 @@ void build_superblock(superblock* superBlock, FILE* diskImage, bool verbose) {
 	}
 }
 
-inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
+inode* build_inode(superblock* superBlock, FILE* diskImage,
+                   unsigned long offset, bool verbose) {
 	int inodeOffset,
 	    i;
 	inode* inodeList;
@@ -83,7 +116,7 @@ inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
 	inodeList = malloc(sizeof(inode) * superBlock->s_ninodes);
 	inodeOffset = (2 + superBlock->s_imap_blocks + superBlock->s_zmap_blocks)
 	            * superBlock->s_block_size;
-	fseek(diskImage, inodeOffset, SEEK_SET);
+	fseek(diskImage, inodeOffset + offset, SEEK_SET);
 	fread(inodeList, sizeof(inode) * superBlock->s_ninodes,
 	      superBlock->s_ninodes, diskImage);
 	if (verbose) {
@@ -99,12 +132,13 @@ inode* build_inode(superblock* superBlock, FILE* diskImage, bool verbose) {
 	return inodeList;
 }
 
-directory* read_zone(int zone, FILE* diskImage, superblock* superBlock) {
+directory* read_zone(int zone, FILE* diskImage, unsigned long offset,
+                     superblock* superBlock) {
 	int zonesize;
 	directory* fileList;
 	
 	zonesize = superBlock->s_block_size << superBlock->s_log_zone_size;
-	fseek(diskImage, zone * zonesize, SEEK_SET);
+	fseek(diskImage, (zone * zonesize) + offset, SEEK_SET);
 	fileList = malloc(zonesize);
 	fread(fileList, zonesize, 1, diskImage);
 	

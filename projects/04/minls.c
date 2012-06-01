@@ -4,26 +4,26 @@
 
 int main(int argc, char *argv[]) {
 	int i,
+	    part = -1,
+	    subpart = -1,
 	    currentInode,
 	    nonDeletedFiles,
-	    numExtraFiles;
-	int optind;
+	    numExtraFiles,
+	    optind;
+	unsigned long offset;
 	bool verbose = false;
-	char* part = NULL,
-	    * subpart = NULL,
-	    * imagefile = NULL,
+	char* imagefile = NULL,
 	    * path = NULL,
 	    * pathComponent,
 	    * pathSeparator = "/";
 	FILE* diskImage;
-	partition partitionTable[4];
 	superblock superBlock;
 	inode* inodeList;
 	directory* fileList;
 	directory file;
 	char filename[61];
 	
-	optind = parse_flagged_arguments(argc, argv, &verbose, part, subpart);
+	optind = parse_flagged_arguments(argc, argv, &verbose, &part, &subpart);
 	if (optind == -1) {
 		show_help_and_exit();
 	}
@@ -57,11 +57,9 @@ int main(int argc, char *argv[]) {
 	*/
 	
 	/* (partition) -> sector -> block -> zone */
-	if (part) {
-		build_partition(partitionTable, diskImage, verbose);
-	}
-	build_superblock(&superBlock, diskImage, verbose);
-	inodeList = build_inode(&superBlock, diskImage, verbose);
+	offset = fetch_partition_offset(part, diskImage, verbose);
+	build_superblock(&superBlock, diskImage, offset, verbose);
+	inodeList = build_inode(&superBlock, diskImage, offset, verbose);
 	
 	/* Do special-case stuff for the root (/) */
 	/* Inode 1 is the root */
@@ -70,7 +68,7 @@ int main(int argc, char *argv[]) {
 	numExtraFiles = 2;
 	/* Get file list */
 	fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
-	                     &superBlock);
+	                     offset, &superBlock);
 	pathComponent = strtok(path, pathSeparator);
 	
 	/* Walk on down the tree while there are still branches to walk down */
@@ -90,7 +88,7 @@ int main(int argc, char *argv[]) {
 			/*printf("%s is a directory\n", pathComponent);*/
 			/* (Yes) Get list of contained files */
 			fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
-			                     &superBlock);
+			                     offset, &superBlock);
 			/* . and .. won't be accounted for in the inode's link counter. */
 			numExtraFiles = 2;
 		} else {
