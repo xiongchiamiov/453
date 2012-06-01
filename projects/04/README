@@ -3,7 +3,6 @@ CPE 453 Assignment 4
 
 # TODO #
 
-* Use `u_intX_t` types in all structures
 * Fail gracefully when selecting no partition on a partitioned disc
 * Work with partitions
 * Work with subpartitions

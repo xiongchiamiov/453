@@ -37,7 +37,7 @@ int parse_flagged_arguments(int argc, char* argv[], bool* verbose, char* part,
 
 void build_partition(partition partitionTable[], FILE* diskImage, bool verbose) {
 	int i;
-	uint8_t byte[2];
+	u_int8_t byte[2];
 	
 	fseek(diskImage, MAGIC_BYTE_ONE_ADDRESS, SEEK_SET);
 	fread(byte, 1, 1, diskImage);
@@ -240,9 +240,9 @@ void print_partition(partition* partition) {
 	fprintf(stderr, "  \n");
 	fprintf(stderr, "\tend_cyl:    %16u", partition->end_cyl);
 	fprintf(stderr, "  \n");
-	fprintf(stderr, "\tlFirst:     %16lu", partition->lFirst);
+	fprintf(stderr, "\tlFirst:     %16u", partition->lFirst);
 	fprintf(stderr, "  First sector (LBA addressing)\n");
-	fprintf(stderr, "\tsize:       %16lu", partition->size);
+	fprintf(stderr, "\tsize:       %16u", partition->size);
 	fprintf(stderr, "  Size of partition (in sectors)\n");
 }
 
