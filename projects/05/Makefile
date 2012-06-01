@@ -25,10 +25,10 @@ test: hello
 	@./hello
 
 handin:
-	handin pn-cs453 asgn5 README Makefile *.c *.h
+	handin pn-cs453 asgn5 README Makefile *.c
 
 longlines:
-	~pnico/bin/longlines.pl *.c *.h
+	~pnico/bin/longlines.pl *.c
 
 clean:
 	rm -rf core* *.o *.gch $(ALL)
