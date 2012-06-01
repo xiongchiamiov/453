@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 	/* . and .. won't be accounted for in the inode's link counter. */
 	numExtraFiles = 2;
 	/* Get file list */
-	fileList = read_zone(inodeList[currentInode - 1].zone0, diskImage,
+	fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
 	                     &superBlock);
 	pathComponent = strtok(path, pathSeparator);
 	
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 		if (inodeList[currentInode - 1].mode & 040000) {
 			printf("%s is a directory\n", pathComponent);
 			/* (Yes) Get list of contained files */
-			fileList = read_zone(inodeList[currentInode - 1].zone0, diskImage,
+			fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
 			                     &superBlock);
 			/* . and .. won't be accounted for in the inode's link counter. */
 			numExtraFiles = 2;
