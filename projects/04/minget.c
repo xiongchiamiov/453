@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 	build_superblock(&superBlock, diskImage, verbose);
 	inodeList = build_inode(&superBlock, diskImage, verbose);
 	
-	printf("%s:\n", path);
+	/*printf("%s:\n", path);*/
 	
 	/* Do special-case stuff for the root (/) */
 	/* Inode 1 is the root */

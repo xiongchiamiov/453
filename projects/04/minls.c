@@ -63,8 +63,6 @@ int main(int argc, char *argv[]) {
 	build_superblock(&superBlock, diskImage, verbose);
 	inodeList = build_inode(&superBlock, diskImage, verbose);
 	
-	printf("%s:\n", path);
-	
 	/* Do special-case stuff for the root (/) */
 	/* Inode 1 is the root */
 	currentInode = 1;
@@ -104,6 +102,11 @@ int main(int argc, char *argv[]) {
 		}
 		/* Get the next branch of the path-tree, if there is one. */
 		pathComponent = strtok(NULL, pathSeparator);
+	}
+	
+	/* This is a really poor way to check if we ended on a directory. */
+	if (numExtraFiles) {
+		printf("%s:\n", path);
 	}
 	
 	/* Print out all of our files.  Since we don't actually know how long the
