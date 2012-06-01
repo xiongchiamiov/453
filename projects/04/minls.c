@@ -123,7 +123,8 @@ int main(int argc, char *argv[]) {
 		/* If the name is 60 characters, it's not null-terminated.  So, make
 		 * sure there's a null at the end. */
 		strncpy(filename, (char *)(file.name), 60);
-		filename[61] = '\0';
+		/* Remember, the string is 0-indexed... */
+		filename[60] = '\0';
 		
 		if (verbose) {
 			fprintf(stderr, "File with name: %s\n", filename);
