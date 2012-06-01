@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
         
         /* Get inode for this part of the path. */
         currentInode = search_for_inode(pathComponent, fileList,
-                                        inodeList[currentInode - 1].numLinks + 2);
+                                        inodeList[currentInode-1].numLinks + 2);
         if (currentInode == 0) {
             fprintf(stderr, "File %s not found!\n", path);
             exit(1);
@@ -90,8 +90,8 @@ int main(int argc, char* argv[]) {
         if (inodeList[currentInode - 1].mode & 040000) {
             /*printf("%s is a directory\n", pathComponent);*/
             /* (Yes) Get list of contained files */
-            fileList = read_zone(inodeList[currentInode - 1].zones[0], diskImage,
-                                 offset, &superBlock);
+            fileList = read_zone(inodeList[currentInode - 1].zones[0],
+                                 diskImage, offset, &superBlock);
         } else {
             /*printf("%s is a file\n", pathComponent);*/
             /* (No) Copy the sucker over */
@@ -106,8 +106,8 @@ int main(int argc, char* argv[]) {
 }
 
 void show_help_and_exit() {
-    fprintf(stderr,
-           "Usage: minget [-v] [-p part [-s subpart]] imagefile srcpath [dstpath]\n");
+    fprintf(stderr, "Usage: minget [-v] [-p part [-s subpart]] imagefile ");
+    fprintf(stderr, "srcpath [dstpath]\n");
     exit(EXIT_FAILURE);
 }
 

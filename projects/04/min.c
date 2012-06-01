@@ -241,7 +241,8 @@ void print_superblock(superblock* superBlock) {
     fprintf(stderr, "  inode for root dir of mounted file sys\n");
     fprintf(stderr, "\ts_imount:           %16p", superBlock->s_imount);
     fprintf(stderr, "  inode mounted on\n");
-    fprintf(stderr, "\ts_inodes_per_block: %16d", superBlock->s_inodes_per_block);
+    fprintf(stderr, "\ts_inodes_per_block: %16d",
+            superBlock->s_inodes_per_block);
     fprintf(stderr, "  precalculated from magic number\n");
     fprintf(stderr, "\ts_dev:              %16d", superBlock->s_dev);
     fprintf(stderr, "  whose super block is this?\n");
